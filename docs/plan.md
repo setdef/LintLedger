@@ -19,4 +19,4 @@ Several projects each grew their own copy of this idea. LintLedger is one tool, 
 - **Moving the earlier copies over to LintLedger is not part of this project.**
 - **Releases happen on GitHub, freely:** tags and GitHub releases are cut whenever the trunk is ready. Versions are `0.X.Y` only, three plain integers: no prerelease form (no `-rc.1`, no `.pre.`), and no `1.0.0` or higher until the maintainer says so. Nothing goes to a registry outside GitHub (RubyGems, mise's registry, or any other) until the maintainer approves it.
 
-Nothing else is settled. What the tool does, how a ledger reads, and how the project is set up are decided through #1.
+Nothing else is settled. What the tool does, how a ledger reads, and how the project is set up are decided through #1 and #15.
