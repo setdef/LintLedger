@@ -11,18 +11,21 @@ class ProjectTest < Minitest::Test
 
   Minitest.after_run { FileUtils.remove_entry(ROOT) }
 
-  def self.write(files)
+  def self.write(root, files)
     files.each do |path, text|
-      FileUtils.mkdir_p(File.dirname(File.join(ROOT, path)))
-      File.binwrite(File.join(ROOT, path), text)
+      FileUtils.mkdir_p(File.dirname(File.join(root, path)))
+      File.binwrite(File.join(root, path), text)
     end
   end
 
   system("git", "-C", ROOT, "init", "--quiet", exception: true)
-  write([[".gitignore", "/build/\n"], ["lib/tracked.rb", "1\n"], ["lib/deleted.rb", "2\n"], ["docs/a café.md", "3\n"]])
+  write(
+    ROOT,
+    [[".gitignore", "/build/\n"], ["lib/tracked.rb", "1\n"], ["lib/deleted.rb", "2\n"], ["docs/a café.md", "3\n"]]
+  )
   system("git", "-C", ROOT, "add", ".", exception: true)
   File.delete(File.join(ROOT, "lib/deleted.rb"))
-  write([["lib/untracked.rb", "4\r\n"], ["build/output.rb", "5\n"]])
+  write(ROOT, [["lib/untracked.rb", "4\r\n"], ["build/output.rb", "5\n"]])
   File.symlink("tracked.rb", File.join(ROOT, "lib/link.rb"))
 
   def test_finds_the_top_of_the_working_tree_from_a_folder_inside_it
