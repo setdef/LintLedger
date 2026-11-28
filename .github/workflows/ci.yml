@@ -338,7 +338,7 @@ jobs:
         timeout-minutes: 10
         run: >-
           docker run --rm -v "$GITHUB_WORKSPACE:/work" -e MISE_GITHUB_TOKEN "$IMAGE"
-          sh -c 'apk add --no-cache bash mise > /dev/null && mkdir /tmp/install && cd /tmp/install && exec bash /work/.github/scripts/verify-mise-install.sh "$0" "$1"'
+          sh -c 'apk add --no-cache bash > /dev/null && bash /work/.github/scripts/install-mise-musl.sh /usr/local/bin && mkdir /tmp/install && cd /tmp/install && exec bash /work/.github/scripts/verify-mise-install.sh "$0" "$1"'
           "$VERSION" "$RECIPE"
         env:
           VERSION: ${{ needs.release.outputs.version }}
