@@ -1,0 +1,7 @@
+module RuboCop
+  class ConfigFinder
+    def self.project_root: () -> String
+
+    def self.project_root=: (String root) -> String
+  end
+end

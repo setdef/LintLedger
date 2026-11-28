@@ -9,6 +9,7 @@ libraries = %w[json minitest open3 optparse stringio].freeze
 target :lib do
   signature "sig"
   check "lib"
+  check "exe/alibi"
 
   configure_code_diagnostics(Steep::Diagnostic::Ruby.all_error)
 
@@ -17,8 +18,7 @@ end
 
 target :tasks do
   signature "tasks/sig"
-  check "tasks/critic_faults.rb"
-  check "tasks/ruby_doc_comments.rb"
+  check "tasks"
 
   configure_code_diagnostics(Steep::Diagnostic::Ruby.all_error)
 
