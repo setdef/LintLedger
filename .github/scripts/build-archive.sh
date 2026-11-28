@@ -40,8 +40,10 @@ fi
 "$root/.github/scripts/stamp-version.sh" "$version"
 
 export BUNDLE_PATH=${BUNDLE_PATH:-${TMPDIR:-/tmp}/alibi-bundle}
+# The check group's gems are for the checks, and the build needs none of them.
+export BUNDLE_WITHOUT=check
 bundle install
-bundle exec rake build
+bundle exec rake -f tasks/build.rake build
 
 # Fledge names the archive after the app and the platform it ran on, so
 # the platform must be the one asked for.
