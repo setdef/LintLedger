@@ -8,9 +8,9 @@ These are the working rules for everyone who changes this repository: people, an
 
 A check that anyone can switch off without anyone noticing is a check nobody can trust. Every linter, type checker, and compiler lets someone switch a check off anywhere in the code. Each such spot is easy to miss in the change that adds it, and hard to find among the rest of the code afterward. Alibi puts every one on the record, with its reason, so whoever answers for the code knows every place where a passing check doesn't mean what it says.
 
-- Fix the code before you write an entry. The best ledger is empty.
+- Fix the code before you write an alibi. The best alibi file is empty.
 - Write each reason for a reader who wasn't there.
-- Make an entry cost something to add, and nothing to keep.
+- Make an alibi cost something to add, and nothing to keep.
 
 ## What the project is
 
