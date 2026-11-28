@@ -22,7 +22,7 @@ Write the project's name as LintLedger; the command is `lint-ledger`, the Ruby m
 
 The project practices trunk-based development.
 
-- **Run the tests** _TODO_
+- **Run the tests** with `mise exec -- bundle exec rake test`. `mise exec` runs them on the Ruby version that `mise.toml` lists.
 - **Check code or tests that behave differently on Windows, on Windows.** This covers anything that reads `File::ALT_SEPARATOR` or `Gem.win_platform?`, and anything that depends on paths, line endings, `fork`, or signals.
 - **Check a change to `.github/workflows/*.yml`** by loading the file with `YAML.safe_load_file` and running each changed `run:` string exactly as YAML parsed it.
 - **When the push is refused because `trunk` moved,** read the diff, rebase, run the gate again if risky, and push again. Read the diff every time, even when the incoming commit messages look unrelated: two changes can rebase cleanly and still break each other.
@@ -57,7 +57,7 @@ For example: `feat(cli): report each suppression the ledger lacks`, or `docs: de
 - **Improve software design** according to the Boy Scout Rule, with refactorings in separate commits before implementation. Make the change easy (warning: this may be hard), then make the easy change.
 - **TDD tests every change in behavior.** Confirm that each new test fails without the change: a test that passes either way proves nothing.
 - **Update the user documentation** in the same commit as a change to anything users see. Watch your prose style, and use best practices for developer docs.
-- **Write the doc comment** _TODO_
+- **Write the doc comment** for every public class, module, constant, and method in the matching `.rbs` declaration in `sig/`. A comment directly above a `def`, `class`, or `module` in `lib/` would be RDoc documentation, which doesn't go in `.rb` files. Don't leave commented-out code, history notes, or decorative divider comments in the source.
 - **Comment why, not what.** Rename a variable or extract a method instead of explaining unclear code. Write a comment for a reason the code can't show, such as a constraint from outside the project or the choice of an algorithm.
 
 ## Writing things down
@@ -83,19 +83,19 @@ For example: `feat(cli): report each suppression the ledger lacks`, or `docs: de
 
 ## Security
 
-_TODO_
+LintLedger runs a project's ledgers and plugins as Ruby, with the user's rights, and reads the project's files. Treat every path, file, and line of output it reads as untrusted input.
 
 - Start a subprocess with an array of arguments, never a single string a shell would parse.
 - Build file paths from parts with `File.join` or `Pathname`, and check that a path built from outside input stays inside the directory you meant it for.
 - Never hardcode a secret, such as an API key. Take a secret from a file or standard input, never from a flag or an environment variable: the system shows every process's arguments to other users in its process listing, and every child process inherits the environment. Never print a secret.
 - Before every network request, have the program say on standard error what it is about to do, and give the request a time limit, so that no command waits on the network in silence or forever.
-- _TODO_
+- A ledger or a plugin runs with the user's rights. Never widen what it can reach.
 - Never call `Marshal.load` or `YAML.unsafe_load` on data from outside the process.
 - Commits, issues, comments, docs, and code contain only what anyone could find in public sources. Never put in them your machine's names, paths, or hardware, or anything said in a private conversation, and never quote a person from one. An ADR lists its deciders by role, with links to the public issues.
 
 ## Quality gates
 
-_TODO_ Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through.
+`bundle exec rake` runs the quality gates: a frozen `bundle install`, the tests, RuboCop, Steep, RubyCritic, test coverage, RDoc coverage, `docs:placement` (which fails on a doc comment in a `.rb` file), `reuse lint`, and LintLedger on the project's suppressions. Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through.
 
 Coverage is 100% for each file, on every system CI tests. A test skipped on one system can drop that system's branch coverage below 100% and turn its job red, even though every test passes. Never skip a test on one system to make it pass. Pass the system-dependent value in, such as a path separator or a platform flag, so the test runs everywhere.
 
@@ -111,4 +111,8 @@ Ask the maintainer before you change any of these:
 
 ## Copyright and licenses
 
-LintLedger is MIT-licensed, copyright setdef.
+The project follows the [REUSE Specification](https://reuse.software/spec-3.3/). The project's code and configuration are MIT and its documentation CC-BY-4.0, copyright setdef. Both licenses are permissive, so those files have no SPDX headers; `REUSE.toml` covers them.
+
+A file under a copyleft or share-alike license must not be copied from elsewhere without permission from the maintainer. An approved copyleft or share-alike file, or a file copied under a permissive or public-domain license, has that license in its SPDX header, and the license's text goes in `LICENSES/`. Run `reuse lint` before you push when copying or porting code.
+
+Code ported from another project (an algorithm translated into Ruby, a table, a regex, etc.), as opposed to code only inspired by it, goes between `# SPDX-SnippetBegin` and `# SPDX-SnippetEnd` comments in its file. Inside them, give the upstream license as `SPDX-License-Identifier`, the upstream copyright as `SPDX-SnippetCopyrightText`, and an `SPDX-SnippetComment` that gives the upstream project's name and file and says what the port changed. Examples in documentation use snippet comments too, under MIT-0. `reuse lint` must still pass.
