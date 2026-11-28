@@ -100,4 +100,6 @@ jobs:
         run: .github/scripts/release-notes.sh > notes.md
 
       - name: Publish the release through a draft
-        run: .github/scripts/publish-release.sh "$GITHUB_REF_NAME" "Alibi ${{ steps.version.outputs.version }}" files notes.md
+        run: .github/scripts/publish-release.sh "$GITHUB_REF_NAME" "Alibi $VERSION" files notes.md
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
