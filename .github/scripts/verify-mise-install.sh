@@ -7,10 +7,12 @@
 #
 #   verify-mise-install.sh VERSION RECIPE
 #
-# RECIPE is the number of the toml block in README.md's Install section that
-# fits this computer: 1 for macOS, Linux with glibc, and Windows, and 2 for
-# Linux with musl. Needs mise on PATH, and bash and awk. Run it in a folder
-# of its own: it writes mise.toml there.
+# RECIPE is the number of the toml block under README.md's Install heading
+# that fits this computer: 1 for macOS, Linux with glibc, and Windows, and 2
+# for Linux with musl. Only the blocks under that heading count, and the
+# script fails unless it has exactly two, so that a toml block elsewhere in
+# README.md can't shift the numbering. Needs mise on PATH, and bash and awk.
+# Run it in a folder of its own: it writes mise.toml there.
 
 set -eu
 
@@ -18,13 +20,21 @@ version=${1:?usage: verify-mise-install.sh VERSION RECIPE}
 recipe=${2:?usage: verify-mise-install.sh VERSION RECIPE}
 root=$(cd "$(dirname "$0")/../.." && pwd)
 
-# Prints the numbered fenced toml block of README.md.
-awk -v wanted="$recipe" '
-  /^```toml$/ { count++; if (count == wanted) in_block = 1; next }
-  /^```$/ { in_block = 0 }
-  in_block
-' "$root/README.md" > mise.toml
-[ -s mise.toml ] || { echo "verify-mise-install.sh: README.md has no toml block number $recipe" >&2; exit 1; }
+# Prints the number of fenced toml blocks under the Install heading, or, given
+# a block's number, the lines of that block.
+install_blocks() {
+  awk -v wanted="${1:-}" '
+    /^## / { in_install = ($0 == "## Install") }
+    in_install && /^```toml$/ { count++; in_block = 1; next }
+    /^```$/ { in_block = 0 }
+    in_install && in_block && count == wanted
+    END { if (wanted == "") print count + 0 }
+  ' "$root/README.md"
+}
+blocks=$(install_blocks)
+[ "$blocks" = 2 ] || { echo "verify-mise-install.sh: README.md's Install section has $blocks toml blocks, not the 2 this script numbers" >&2; exit 1; }
+install_blocks "$recipe" > mise.toml
+[ -s mise.toml ] || { echo "verify-mise-install.sh: README.md's Install section has no toml block number $recipe" >&2; exit 1; }
 echo "verify-mise-install.sh: the recipe README.md gives:"
 cat mise.toml
 
