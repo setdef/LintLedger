@@ -1,0 +1,252 @@
+# RuboCop runs every cop it has, over the Ruby, the RBS, and the Ruby in the
+# Markdown. A style below is the setting that ruby_quality's baseline gives
+# the cop where that differs from RuboCop's default; a cop stays on with
+# its default everywhere else.
+
+# Makes this repository RuboCop's project root, wherever the checkout sits.
+require:
+  - ./tasks/rubocop_project_root.rb
+
+plugins:
+  - rubocop-performance
+  - rubocop-minitest
+  - rubocop-rake
+  - rubocop-thread_safety
+  - rubocop-packaging
+  - rubocop-md
+  - rubocop-on-rbs
+
+AllCops:
+  EnabledByDefault: true
+  NewCops: enable
+  TargetRubyVersion: "4.1"
+  Exclude:
+    - "coverage/**/*"
+    - "tmp/**/*"
+    - "vendor/**/*"
+
+# The style of the baseline.
+
+Layout/ArgumentAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/ArrayAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/CommentIndentation:
+  AllowForAlignment: true
+
+Layout/EmptyLineBetweenDefs:
+  AllowAdjacentOneLineDefs: true
+
+Layout/EndAlignment:
+  EnforcedStyleAlignWith: start_of_line
+
+Layout/LeadingCommentSpace:
+  AllowRBSInlineAnnotation: true
+
+Layout/LineEndStringConcatenationIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineArrayBraceLayout:
+  EnforcedStyle: new_line
+
+Layout/MultilineAssignmentLayout:
+  EnforcedStyle: same_line
+
+Layout/MultilineHashBraceLayout:
+  EnforcedStyle: new_line
+
+Layout/MultilineMethodCallIndentation:
+  EnforcedStyle: indented
+
+Layout/MultilineMethodDefinitionBraceLayout:
+  EnforcedStyle: new_line
+
+Layout/MultilineOperationIndentation:
+  EnforcedStyle: indented
+
+Layout/ParameterAlignment:
+  EnforcedStyle: with_fixed_indentation
+
+Layout/SpaceAroundOperators:
+  AllowForAlignment: false
+  EnforcedStyleForExponentOperator: space
+  EnforcedStyleForRationalLiterals: space
+
+Layout/SpaceInLambdaLiteral:
+  EnforcedStyle: require_space
+
+Layout/TrailingWhitespace:
+  AllowInHeredoc: true
+
+Lint/AmbiguousRange:
+  RequireParenthesesForMethodChains: true
+
+Lint/EmptyBlock:
+  AllowComments: true
+  AllowEmptyLambdas: true
+
+Lint/EmptyConditionalBody:
+  AllowComments: true
+
+Lint/EmptyFile:
+  AllowComments: true
+
+Lint/EmptyInPattern:
+  AllowComments: true
+
+Lint/RedundantSplatExpansion:
+  AllowPercentLiteralArrayArgument: true
+
+Lint/SuppressedException:
+  AllowNil: true
+  AllowComments: true
+
+Lint/SymbolConversion:
+  EnforcedStyle: strict
+
+Style/AccessModifierDeclarations:
+  EnforcedStyle: inline
+
+Style/EmptyElse:
+  EnforcedStyle: empty
+
+Style/FrozenStringLiteralComment:
+  EnforcedStyle: always
+  SafeAutoCorrect: true
+
+Style/HashSyntax:
+  EnforcedStyle: no_mixed_keys
+  EnforcedShorthandSyntax: always
+
+Style/MethodDefParentheses:
+  EnforcedStyle: require_parentheses
+
+Style/ModuleFunction:
+  EnforcedStyle: extend_self
+
+Style/NumberedParameters:
+  EnforcedStyle: disallow
+
+Style/NumericLiteralPrefix:
+  EnforcedOctalStyle: zero_with_o
+
+Style/ObjectThen:
+  EnforcedStyle: then
+
+Style/PreferredHashMethods:
+  EnforcedStyle: short
+
+Style/QuotedSymbols:
+  EnforcedStyle: same_as_string_literals
+
+Style/RedundantInitialize:
+  AllowComments: true
+
+Style/RedundantReturn:
+  AllowMultipleReturnValues: true
+
+Style/RegexpLiteral:
+  EnforcedStyle: slashes
+  AllowInnerSlashes: false
+
+Style/RescueStandardError:
+  EnforcedStyle: implicit
+
+Style/Semicolon:
+  AllowAsExpressionSeparator: true
+
+Style/SendWithLiteralMethodName:
+  AllowSend: true
+
+Style/SignalException:
+  EnforcedStyle: only_raise
+
+Style/SoleNestedConditional:
+  AllowModifier: false
+
+Style/StabbyLambdaParentheses:
+  EnforcedStyle: require_parentheses
+
+Style/StringConcatenation:
+  Mode: aggressive
+
+Style/StringLiterals:
+  EnforcedStyle: double_quotes
+
+Style/StringLiteralsInInterpolation:
+  EnforcedStyle: single_quotes
+
+Style/SymbolProc:
+  AllowMethodsWithArguments: false
+  AllowComments: true
+
+Style/TernaryParentheses:
+  EnforcedStyle: require_parentheses_when_complex
+  AllowSafeAssignment: true
+
+Style/TrailingCommaInArrayLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingCommaInHashLiteral:
+  EnforcedStyleForMultiline: comma
+
+Style/TrailingUnderscoreVariable:
+  AllowNamedUnderscoreVariables: true
+
+Style/UnlessLogicalOperators:
+  EnforcedStyle: forbid_mixed_logical_operators
+
+# Cops that turning every cop on makes contradict another cop or the project.
+
+Style/Copyright:
+  # No file carries a header, because REUSE.toml declares their licenses.
+  Enabled: false
+
+Lint/ConstantResolution:
+  # RuboCop's docs say enabling this disables Style/RedundantConstantBase.
+  Enabled: false
+
+Style/MissingElse:
+  # RuboCop's docs say this conflicts with Style/EmptyElse's default style.
+  Enabled: false
+
+Markdown/Syntax:
+  # Kramdown doesn't know GitHub's alert syntax, so it reports each
+  # "> [!warning]" line as an undefined link.
+  Enabled: false
+
+Style/DataInheritance:
+  # The form this cop wants, Foo = Data.define(...) do ... end, is a constant to
+  # RDoc: it never sees the methods in the block, so the coverage check doesn't
+  # count them. The class form costs one unnamed superclass.
+  Enabled: false
+
+Style/EndlessMethod:
+  # RDoc misreads an endless method.
+  EnforcedStyle: disallow
+
+Style/Documentation:
+  inherit_mode:
+    merge:
+      - Exclude
+  # The documentation of lib/ lives in sig/**/*.rbs, so a class or module in
+  # lib/ carries no comment. The docs:placement task fails on one that does.
+  Exclude:
+    - "lib/**/*.rb"
+
+Style/DocumentationMethod:
+  inherit_mode:
+    merge:
+      - Exclude
+  # Same reason as Style/Documentation: lib/'s methods are documented in sig/.
+  Exclude:
+    - "lib/**/*.rb"
+
+Style/InlineComment:
+  # Steep reads a type assertion from a trailing comment, `value #: String`,
+  # which is the only place it takes one.
+  Exclude:
+    - "**/*.md"
+    - "lib/**/*.rb"

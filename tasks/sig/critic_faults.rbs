@@ -1,0 +1,14 @@
+class CriticFaults
+  RATING: String
+  LOCATIONS_SHOWN: Integer
+
+  type location = { path: String, line: Integer }
+  type smell = { context: String, message: String, type: String, locations: Array[location] }
+  type analysed_module = { path: String, rating: String, smells: Array[smell] }
+
+  def self.in_report: (String json, floor: Numeric) -> Array[String]
+
+  def self.in_module: (analysed_module mod) -> Array[String]
+
+  def self.smell_line: (smell smell) -> String
+end

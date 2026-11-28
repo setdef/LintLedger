@@ -1,0 +1,32 @@
+module Alibi
+  # The `alibi` command: reads a command line, writes to the two streams it is given,
+  # and answers with the exit status.
+  #
+  # === Examples
+  #
+  #   out = StringIO.new
+  #   Alibi::CommandLine.new(out: out, err: StringIO.new).run(["--version"])
+  #   # => 0
+  #   out.string
+  #   # => "0.0.0\n"
+  class CommandLine
+    PASSED: Integer
+    ERRORED: Integer
+
+    @out: IO | StringIO
+    @err: IO | StringIO
+
+    # A command that writes its output to +out+ and its errors to +err+, which take
+    # anything with a +puts+ method, such as +$stdout+ and +$stderr+.
+    def initialize: (out: IO | StringIO, err: IO | StringIO) -> void
+
+    # Runs the command line +arguments+ and returns the exit status: 0 when every
+    # check passes, which is all that `--version` and `--help` do, and 2 on an error.
+    #
+    # `--version` writes the version on a line, and `--help` writes a usage line. A command
+    # line that Alibi can't use, such as an empty one, an option Alibi doesn't have, or
+    # an argument it doesn't expect, writes one line to +err+ that starts with `alibi:`
+    # and returns 2, with nothing on +out+.
+    def run: (Array[String] arguments) -> Integer
+  end
+end

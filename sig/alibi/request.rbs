@@ -1,0 +1,23 @@
+module Alibi
+  # What a command line asks Alibi to print.
+  #
+  # === Examples
+  #
+  #   Alibi::Request.new(["--version"]).answers
+  #   # => ["0.0.0"]
+  class Request
+    USAGE: String
+
+    @options: Hash[Symbol, bool]
+    @leftovers: Array[String]
+
+    # A request read from the command line +arguments+. Raises UsageError when +arguments+
+    # name an option Alibi doesn't have.
+    def initialize: (Array[String] arguments) -> void
+
+    # The lines to print, `--version` before `--help`, for the options that the arguments name.
+    #
+    # Raises UsageError when the arguments are empty or hold anything but those two options.
+    def answers: () -> Array[String]
+  end
+end

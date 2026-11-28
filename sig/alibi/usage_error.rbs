@@ -1,0 +1,6 @@
+module Alibi
+  # A command line Alibi can't use. Its message is one line that says what is wrong,
+  # without the program's name.
+  class UsageError < StandardError
+  end
+end

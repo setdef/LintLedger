@@ -1,0 +1,4 @@
+# Alibi checks files in any language against an alibi file, which lists each place
+# where a check is switched off, with the reason.
+module Alibi
+end
