@@ -1,0 +1,33 @@
+module Alibi
+  # The matches an alibi's snippet holds where it occurs, and the alibi's occurrence,
+  # which together say which match the alibi excuses, or why it excuses none.
+  #
+  # === Examples
+  #
+  #   file = Alibi::ProjectFile.new("lib/a.rb", "x # TODO # TODO\n")
+  #   held = Alibi::SnippetMatches.new(file.matches(/TODO/), nil)
+  #   verdict = held.claim(Alibi::Excuses.new) { |why| "lib/a.rb:1: since #{why}" }
+  #     .verdict(paths: ["lib/a.rb"], matches: [])
+  #   verdict.first
+  #   # => "lib/a.rb:1: since its snippet holds 2: cut the snippet down to ..."
+  class SnippetMatches
+    @matches: Array[Match]
+    @occurrence: Integer?
+
+    # The +matches+ in a snippet, in order, and +occurrence+, a number from 1 that picks
+    # one of them, or nil for an alibi that gives none.
+    def initialize: (Array[Match] matches, Integer? occurrence) -> void
+
+    # Tells +excuses+ the match the alibi excuses: the one the occurrence counts to, or,
+    # with no occurrence, the only one. When there is none, because the snippet holds no
+    # match, or several and there is no occurrence, or fewer than the occurrence counts
+    # to, it yields why and what to do, as the end of a sentence about the alibi, such
+    # as `its snippet holds none: remove it, or bring its snippet up to date`, and tells
+    # +excuses+ the line the block returns. Returns +excuses+.
+    def claim: (Excuses excuses) { (String why) -> String } -> Excuses
+
+    private def excused: () -> Match?
+
+    private def problem: () -> String
+  end
+end

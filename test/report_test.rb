@@ -4,6 +4,15 @@ require "stringio"
 require "test_helper"
 
 class ReportTest < Minitest::Test
+  FAILED = <<~OUT
+    todos.kdl: failed: 2 matches and 2 alibis in 1 file
+    a.rb:2: 2 alibis excuse this match: keep one: TODO
+    a.rb:3: TODO
+    a.rb: the alibi for "x" matches nothing
+    a.rb:9: the alibi for "y" excuses no match
+  OUT
+  private_constant(:FAILED)
+
   def setup
     @out = StringIO.new
   end
@@ -43,6 +52,28 @@ class ReportTest < Minitest::Test
     report(Alibi::Verdict.new(paths: ["a"], matches: [match("bad\xFFname", 1, "TODO\u009B")]))
 
     assert_equal("bad\\xFFname:1: TODO\\xC2\\x9B\n", @out.string.lines.last)
+  end
+
+  def test_a_pass_with_alibis_says_how_many_matches_they_excuse
+    matches = [match("a.rb", 1, "TODO"), match("a.rb", 2, "TODO")]
+    report(Alibi::Verdict.new(paths: ["a.rb"], matches:, excused: matches))
+
+    assert_equal("todos.kdl: passed: 2 matches in 1 file, each with its alibi\n", @out.string)
+  end
+
+  def test_a_failure_counts_the_matches_and_the_alibis_that_fail_and_lists_each
+    matches = [1, 2, 3].map { match("a.rb", it, "TODO") }
+    once, twice = matches
+    failures = ['a.rb: the alibi for "x" matches nothing', 'a.rb:9: the alibi for "y" excuses no match']
+    report(Alibi::Verdict.new(paths: ["a.rb"], matches:, excused: [once, twice, twice], failures:))
+
+    assert_equal(FAILED, @out.string)
+  end
+
+  def test_a_failure_of_alibis_alone_counts_only_them
+    report(Alibi::Verdict.new(paths: ["a.rb"], matches: [], failures: ["a.rb: \"x\e[2J\" matches nothing"]))
+
+    assert_equal("todos.kdl: failed: 1 alibi in 1 file\na.rb: \"x\\x1B[2J\" matches nothing\n", @out.string)
   end
 
   private def match(path, line, text)

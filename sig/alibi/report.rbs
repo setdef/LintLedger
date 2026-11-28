@@ -12,14 +12,25 @@ module Alibi
     # The report of +verdict+ on the alibi file named +name+.
     def initialize: (String name, Verdict verdict) -> void
 
-    # Writes the report to +out+, which takes anything with a +puts+ method. A pass is
-    # one line that says how many files Alibi checked. A failure is a line with the count
-    # of matches, then one line for each match, as `PATH:LINE: TEXT`. A control character
-    # from a file's path or text, or from the alibi file's name, other than a tab, shows
-    # as an escape such as `\x1B`, as Escaped does.
+    # Writes the report to +out+, which takes anything with a +puts+ method.
+    #
+    # A pass is one line that says how many files Alibi checked, and how many matches it
+    # found there when alibis excuse them, as `todos.kdl: passed: 2 matches in 14 files,
+    # each with its alibi`. A failure is a line with the count of the matches and of the
+    # alibis that fail, as `todos.kdl: failed: 1 match and 2 alibis in 14 files`, leaving
+    # out a count of none, then one line for each, as Verdict#each yields them: an
+    # unexcused match as `PATH:LINE: TEXT`, and the rest as a line that says what is wrong
+    # and what to do.
+    #
+    # A control character from a file's path or text, or from the alibi file's name or
+    # text, other than a tab, shows as an escape such as `\x1B`, as Escaped does.
     def write: (IO | StringIO out) -> void
 
     private def summary: () -> String
+
+    private def excused: () -> String
+
+    private def failed: () -> String
 
     private def scope: () -> String
   end

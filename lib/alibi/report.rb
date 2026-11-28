@@ -10,14 +10,22 @@ module Alibi
 
     def write(out)
       out.puts(summary)
-      @verdict.each { |match| out.puts(Escaped.new(match.to_s).to_s) }
+      @verdict.each { |failure| out.puts(Escaped.new(failure.to_s).to_s) }
     end
 
     private def summary
       name = Escaped.new(@name)
-      return "#{name}: passed: no matches #{scope}" if @verdict.passed?
+      @verdict.passed? ? "#{name}: passed: #{excused}" : "#{name}: failed: #{failed} #{scope}"
+    end
 
-      "#{name}: failed: #{Count.new(@verdict.count, 'match', 'matches')} #{scope}"
+    private def excused
+      found = Count.new(@verdict.matches_found, "match", "matches")
+      found.none? ? "no matches #{scope}" : "#{found} #{scope}, each with its alibi"
+    end
+
+    private def failed
+      matches = Count.new(@verdict.matches_failed, "match", "matches")
+      [matches, Count.new(@verdict.alibis_failed, "alibi", "alibis")].reject(&:none?).join(" and ")
     end
 
     private def scope

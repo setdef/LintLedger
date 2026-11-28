@@ -1,7 +1,7 @@
 module Alibi
-  # The verdict on one alibi file: the files its glob matched, and every match of its
-  # pattern in them, which it enumerates. An alibi file passes when its pattern matches
-  # nothing.
+  # The verdict on one alibi file: the files its glob matched, every match of its pattern
+  # in them, and what its alibis excuse. An alibi file passes when every match has exactly
+  # one alibi and every alibi excuses exactly one match. It enumerates each failure.
   #
   # === Examples
   #
@@ -10,22 +10,43 @@ module Alibi
   #   # => true
   #   verdict.files_checked
   #   # => 2
+  #   match = Alibi::Match.new(path: "lib/a.rb", line: 3, text: "x # TODO")
+  #   Alibi::Verdict.new(paths: ["lib/a.rb"], matches: [match], excused: [match]).passed?
+  #   # => true
   class Verdict
-    include Enumerable[Match]
+    include Enumerable[_ToS]
 
     @paths: Array[String]
     @matches: Array[Match]
+    @unexcused: Array[Match | String]
+    @failures: Array[String]
 
-    # The verdict on the files at +paths+, which hold +matches+.
-    def initialize: (paths: Array[String], matches: Array[Match]) -> void
+    # The verdict on the files at +paths+, which hold +matches+. +excused+ lists the match
+    # that each alibi excuses, so a match listed twice has two alibis, and +failures+
+    # holds a line for each alibi that excuses no match, saying why. With neither, every
+    # match is unexcused, as in an alibi file that has no alibis.
+    def initialize: (paths: Array[String], matches: Array[Match], ?excused: Array[Match], ?failures: Array[String]) -> void
 
-    # Yields each match, in the order of the files, then of their text.
-    def each: () { (Match match) -> void } -> Array[Match]
+    # Yields each failure: first each match that doesn't have exactly one alibi, in the
+    # order of the files, then of their text; then each line of +failures+, in order. An
+    # unexcused match is the Match itself, shown as `PATH:LINE: TEXT`. A match with
+    # several alibis is a line, `PATH:LINE: 2 alibis excuse this match: keep one: TEXT`.
+    def each: () { (_ToS failure) -> void } -> Array[_ToS]
 
     # How many files the glob matched, which Alibi read.
     def files_checked: () -> Integer
 
-    # Whether the alibi file passed: true when there is no match.
+    # How many matches the pattern found in them, excused or not.
+    def matches_found: () -> Integer
+
+    # How many matches don't have exactly one alibi.
+    def matches_failed: () -> Integer
+
+    # How many alibis excuse no match.
+    def alibis_failed: () -> Integer
+
+    # Whether the alibi file passed: true when every match has exactly one alibi and
+    # every alibi excuses a match, as when there are neither matches nor alibis.
     def passed?: () -> bool
   end
 end

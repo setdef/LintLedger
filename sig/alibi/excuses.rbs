@@ -1,0 +1,28 @@
+module Alibi
+  # The match that each of an alibi file's alibis excuses, and, for each alibi that
+  # excuses none, a line saying why, gathered for the verdict one alibi at a time.
+  #
+  # === Examples
+  #
+  #   match = Alibi::Match.new(path: "lib/a.rb", line: 3, text: "x # TODO")
+  #   excuses = Alibi::Excuses.new.excused(match).failed('lib/b.rb: the alibi for "y" matches nothing')
+  #   excuses.verdict(paths: ["lib/a.rb", "lib/b.rb"], matches: [match]).alibis_failed
+  #   # => 1
+  class Excuses
+    @excused: Array[Match]
+    @failures: Array[String]
+
+    # No excuses yet.
+    def initialize: () -> void
+
+    # Records that an alibi excuses +match+, and returns the excuses.
+    def excused: (Match match) -> Excuses
+
+    # Records +failure+, a line that says why an alibi excuses no match and what to do,
+    # and returns the excuses.
+    def failed: (String failure) -> Excuses
+
+    # The verdict on the files at +paths+, which hold +matches+, given these excuses.
+    def verdict: (paths: Array[String], matches: Array[Match]) -> Verdict
+  end
+end

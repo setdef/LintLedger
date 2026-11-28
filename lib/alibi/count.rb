@@ -9,6 +9,10 @@ module Alibi
       freeze
     end
 
+    def none?
+      @number.zero?
+    end
+
     def to_s
       "#{@number} #{(@number == 1) ? @one : @many}"
     end

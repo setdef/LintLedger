@@ -24,9 +24,12 @@ module Alibi
   class AlibiFile
     @glob: Glob
     @pattern: Pattern
+    @alibis: Array[Alibi]
 
-    # The alibi file whose glob is +glob+ and whose pattern is +pattern+.
-    def initialize: (glob: Glob, pattern: Pattern) -> void
+    # The alibi file whose glob is +glob+, whose pattern is +pattern+, and whose alibis
+    # are +alibis+, in the order the file lists them. AlibiFile.parse gives none, since
+    # the parser doesn't read alibis yet.
+    def initialize: (glob: Glob, pattern: Pattern, ?alibis: Array[Alibi]) -> void
 
     # The alibi file whose KDL is +source+, as bytes or as a string.
     #
@@ -39,7 +42,13 @@ module Alibi
     def self.parse: (String source) -> AlibiFile
 
     # The verdict on +project+: the pattern run over each file the glob matches, and
-    # over no other file.
+    # over no other file, and each match paired with the alibi that excuses it. It fails
+    # for each match without exactly one alibi, and each alibi without exactly one
+    # match; Alibi::AlibiFile::Alibi says when an alibi excuses one.
+    #
+    # Builds the index of a file's lines once, and only for a file an alibi names, so a
+    # check costs the length of the files plus the length of the alibis' snippets, not
+    # the alibis times the files.
     #
     # Raises Error when the glob matches no file in +project+, since an alibi file that
     # checks nothing most likely has a mistyped glob. Raises Error when a file the glob
@@ -47,7 +56,61 @@ module Alibi
     # timeout.
     def check: (_Project project) -> Verdict
 
+    private def hear: (Hash[String, ProjectFile] files, Hash[String, Array[Match]] matches) -> Verdict
+
     private def files_in: (_Project project) -> Array[String]
+
+    # One alibi in an alibi file: the path of a file, from the project root; a snippet
+    # copied from that file, which identifies the match the alibi excuses; the reason
+    # that match is necessary there; and, when matches share a line, the occurrence that
+    # says which of the matches in the snippet it excuses.
+    #
+    # An alibi excuses one match, when its snippet occurs exactly once in its file, and
+    # holds exactly one match there, or holds the one its occurrence counts to. A match
+    # is in the snippet when it starts and ends within the lines the snippet covers.
+    # Otherwise the alibi excuses no match and fails: when the snippet occurs nowhere, or
+    # the glob doesn't match its file (a stale alibi); when the snippet occurs more than
+    # once (an ambiguous alibi, which excuses none of its places); when the snippet holds
+    # no match, or several and the alibi has no occurrence; or when the occurrence counts
+    # past the matches in the snippet.
+    #
+    # === Examples
+    #
+    #   snippet = Alibi::Snippet.new("x # TODO")
+    #   Alibi::AlibiFile::Alibi.new(path: "lib/a.rb", snippet:, reason: "Waits on #12.").to_s
+    #   # => "the alibi for \"x # TODO\""
+    class Alibi
+      STALE: String
+
+      @path: String
+      @snippet: Snippet
+      @reason: String
+      @occurrence: Integer?
+
+      # The alibi for the file at +path+, from the project root, whose snippet is
+      # +snippet+ and whose reason is +reason+, which Alibi doesn't check. +occurrence+,
+      # counting from 1, picks one of the matches in the snippet.
+      #
+      # Raises Error when +occurrence+ is less than 1.
+      def initialize: (path: String, snippet: Snippet, reason: String, ?occurrence: Integer?) -> void
+
+      # Tells +excuses+ the match the alibi excuses among +files+, the files the glob
+      # matched by their paths, or, when it excuses none, a line that says why and what
+      # to do. The line starts with the path, and with the first line the snippet covers
+      # when it covers any once, as `lib/a.rb:3: the alibi for "x # TODO" excuses no
+      # match, since its snippet holds none: ...`.
+      def claim: (CheckedFiles files, Excuses excuses) -> Excuses
+
+      # The alibi as a report names it: `the alibi for` and the first line of its
+      # snippet, quoted, as `the alibi for "x # TODO"`.
+      def to_s: () -> String
+
+      private def hold: (CheckedFile file, Range[Integer] lines, Excuses excuses) -> Excuses
+
+      private def ambiguous: (Range[Integer] lines, Range[Integer] again) -> String
+
+      private def none: (Range[Integer] lines, String why) -> String
+    end
 
     # Reads the KDL of an alibi file into an AlibiFile.
     class Parser

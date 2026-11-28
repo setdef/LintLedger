@@ -16,6 +16,9 @@ module Alibi
     # The count of +number+ things, each called +one+, and several called +many+.
     def initialize: (Integer number, String one, String many) -> void
 
+    # Whether the number is 0.
+    def none?: () -> bool
+
     # The number and the word that goes with it, as `1 match`, `2 matches`, or `0 files`.
     def to_s: () -> String
   end

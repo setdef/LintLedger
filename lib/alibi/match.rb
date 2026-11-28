@@ -21,5 +21,12 @@ module Alibi
     def to_s
       "#{@path}:#{@line}: #{@text}"
     end
+
+    def failure(alibis)
+      return self if alibis.zero?
+
+      # One alibi for each match, so each reason is tied to one place.
+      "#{@path}:#{@line}: #{alibis} alibis excuse this match: keep one: #{@text}" if alibis > 1
+    end
   end
 end

@@ -28,5 +28,10 @@ module Alibi
 
     # The match as `PATH:LINE: TEXT`, the form editors and terminals link to the line.
     def to_s: () -> String
+
+    # What the match fails as when +alibis+ alibis excuse it: the match itself, an
+    # unexcused match, for none; nothing for one; and for more than one a line that says
+    # so, as `lib/a.rb:3: 2 alibis excuse this match: keep one: x = 1 # TODO`.
+    def failure: (Integer alibis) -> (Match | String | nil)
   end
 end

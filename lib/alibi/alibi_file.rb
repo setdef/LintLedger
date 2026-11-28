@@ -6,15 +6,23 @@ module Alibi
       Parser.new(source).alibi_file
     end
 
-    def initialize(glob:, pattern:)
+    def initialize(glob:, pattern:, alibis: [])
       @glob = glob
       @pattern = pattern
+      @alibis = alibis
       freeze
     end
 
     def check(project)
-      paths = files_in(project)
-      Verdict.new(paths:, matches: paths.flat_map { |path| @pattern.matches(project.file(path)) })
+      files = files_in(project).to_h { |path| [path, project.file(path)] }
+      hear(files, files.transform_values { |file| @pattern.matches(file) })
+    end
+
+    private def hear(files, matches)
+      checked = CheckedFiles.new(files, matches)
+      excuses = Excuses.new
+      @alibis.each { |alibi| alibi.claim(checked, excuses) }
+      excuses.verdict(paths: files.keys, matches: matches.values.flat_map(&:itself))
     end
 
     private def files_in(project)

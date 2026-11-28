@@ -1,0 +1,27 @@
+module Alibi
+  # The files the glob matched, by their paths, as alibis look for their matches in them.
+  # Each file's lines are indexed the first time an alibi asks for the file, and only
+  # then, so a file no alibi names costs nothing more than its matches did.
+  #
+  # === Examples
+  #
+  #   file = Alibi::ProjectFile.new("lib/a.rb", "x # TODO\n")
+  #   files = Alibi::CheckedFiles.new({ "lib/a.rb" => file }, { "lib/a.rb" => file.matches(/TODO/) })
+  #   files.at("lib/a.rb").places(Alibi::Snippet.new("x # TODO"))
+  #   # => [1..1]
+  #   files.at("lib/gone.rb").places(Alibi::Snippet.new("x # TODO"))
+  #   # => []
+  class CheckedFiles
+    @files: Hash[String, ProjectFile]
+    @matches: Hash[String, Array[Match]]
+    @checked: Hash[String, CheckedFile]
+
+    # The files +files+, by their paths, in which the pattern found +matches+, by the same
+    # paths.
+    def initialize: (Hash[String, ProjectFile] files, Hash[String, Array[Match]] matches) -> void
+
+    # The file at +path+, the same one each time. A path that isn't among the files is an
+    # empty file, where no snippet occurs and the pattern found nothing.
+    def at: (String path) -> CheckedFile
+  end
+end
