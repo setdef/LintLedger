@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.0] - 2026-11-28
+
 ### Added
 
 - Each GitHub release carries a build of Alibi for macOS on Apple silicon, Linux with glibc or musl on x86-64 and
@@ -32,4 +34,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   file, a pattern it refuses, an alibi file outside a git working tree, a matched file that isn't UTF-8 text, or a
   bare `alibi` with no `*.kdl` file in `.config/alibi/`.
 
-[Unreleased]: https://github.com/setdef/Alibi/commits/trunk
+[Unreleased]: https://github.com/setdef/Alibi/compare/v0.1.0...HEAD
+[0.1.0]: https://github.com/setdef/Alibi/releases/tag/v0.1.0
