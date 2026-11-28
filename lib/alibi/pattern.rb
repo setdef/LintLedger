@@ -7,13 +7,8 @@ module Alibi
 
     def initialize(source, timeout: TIMEOUT)
       @regexp = compile(source, timeout)
-      return if Regexp.linear_time?(@regexp)
-
-      raise(
-        Error,
-        "Ruby can't match the pattern #{self} in linear time, so it could hang Alibi: remove its back-references, " \
-          "captures inside lookarounds, nested quantifiers, absence operators, and conditionals"
-      )
+      refuse_empty_matches
+      refuse_superlinear
     end
 
     def matches(file)
@@ -22,6 +17,26 @@ module Alibi
 
     def to_s
       @regexp.inspect
+    end
+
+    private def refuse_empty_matches
+      return unless @regexp.match?("")
+
+      raise(
+        Error,
+        "the pattern #{self} can match empty text, so it would match at every position of every file: " \
+          "write it so that every match has at least one character"
+      )
+    end
+
+    private def refuse_superlinear
+      return if Regexp.linear_time?(@regexp)
+
+      raise(
+        Error,
+        "Ruby can't match the pattern #{self} in linear time, so it could hang Alibi: remove its back-references, " \
+          "captures inside lookarounds, nested quantifiers, absence operators, and conditionals"
+      )
     end
 
     private def compile(source, timeout)

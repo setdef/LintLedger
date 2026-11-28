@@ -9,7 +9,7 @@ For each alibi file it is given, Alibi:
 1. reads the file's bytes and parses them as KDL 2 into a glob and a pattern, refusing anything else;
 2. asks git for the top of the working tree that holds the alibi file, which is the project root, and for the project files under it;
 3. keeps the project files the glob matches, reads each one as UTF-8 with LF line breaks, and runs the pattern over its whole text;
-4. reaches a verdict: a pass when there is no match, a failure otherwise;
+4. reaches a verdict: a pass when there is no match, a failure otherwise, and an error when the glob matched no file;
 5. prints the verdict, and returns an exit status. Over several alibi files, the highest status wins: 2 for an error, then 1 for a failure, then 0.
 
 ## How the pieces fit
@@ -20,10 +20,10 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 | --- | --- | --- |
 | `CommandLine` | Turns a command line into alibi files to check, checks each, and picks the exit status. | Reads alibi files; writes to the two streams |
 | `Request` | Reads the options and the names of the alibi files from the arguments. | No |
-| `AlibiFile` | Holds a glob and a pattern, and checks a project against them. | No |
+| `AlibiFile` | Holds a glob and a pattern, and checks a project against them, refusing a project the glob matches no file in. | No |
 | `AlibiFile::Parser`, `AlibiFile::Node` | Turn an alibi file's KDL into an `AlibiFile`, refusing anything else in it. | No |
 | `Glob` | Chooses, among a project's paths, the ones the alibi file applies to. | No |
-| `Pattern` | Compiles and vets the regexp. | No |
+| `Pattern` | Compiles and vets the regexp: it refuses one that can match empty text or can't match in linear time. | No |
 | `ProjectFile` | Decodes one file's bytes and finds a regexp's matches in its text. | No |
 | `Match` | One match, shown as `PATH:LINE: TEXT`. | No |
 | `Verdict` | The files checked and the matches in them. | No |
@@ -42,6 +42,10 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 
 **A pattern can't hang Alibi.** Alibi refuses a regexp unless `Regexp.linear_time?` is true for it. That keeps the verdict from depending on how fast the machine is, which a timeout alone would not. Lookahead and lookbehind stay, which RE2's syntax would have dropped, and the build needs no native extension, which RE2 would bring to every platform. The 2-second timeout on each file is a backstop that a linear-time pattern reaches only on an enormous file.
 
+**A glob that matches no file is an error.** An alibi file that checks nothing passes whatever the project holds, so a mistyped glob would leave a ban unenforced, unseen, for as long as nobody looks. Alibi refuses a bare `alibi` with no alibi file to run for the same reason. It is a fact about the alibi file and a project together, since the same glob matches in one project and none in another, so `AlibiFile#check` decides it, from the paths the project lists; `Glob` knows only its text, and `Verdict` only reports what was checked.
+
+**A pattern that can match empty text is an error.** Alibi tests that by matching the compiled regexp against an empty string, which is true of every pattern that can match nothing, such as `a*`, `^`, or `(?:a|)`. Such a pattern matches at every position of every file, so it fails on every line, and no match in it can be the one that someone meant. It is a fact about the pattern alone, so `Pattern` refuses it where it vets the regexp, with the other refused patterns, before any file is read.
+
 **Text is the same on every system.** Each file is read as UTF-8, and each CRLF becomes LF before matching, so a Windows checkout with `core.autocrlf` gets the Linux verdict, and a pattern can end a line with `\n` or `$` either way. A file that isn't valid UTF-8 is an error, with the file's path in its message: a glob that matches binary files is a mistake in the alibi file.
 
 **An error outweighs a failure, and doesn't stop the run.** `CommandLine` reports an error in one alibi file and checks the rest, so one broken file doesn't hide the verdicts of the others. The exit statuses are ordered by how much they need a person: 2 means the check itself couldn't run, and 1 that it ran and found something.
@@ -49,8 +53,6 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 ## Traps
 
 - **This project's alibi files contain what they ban,** and so do the samples that test them. `bundle exec rake` runs `exe/alibi` over the alibi files in `.config/alibi/`, whose globs match only Ruby, RBS, and the files Bundler, Rake, and Steep read. The alibi files themselves are KDL, and each sample is a `.txt` file under `test/fixtures/`, so the check never reads them. `test/alibi_files_test.rb` reads the samples for each alibi file: a path its glob has to match, the forms its pattern has to find, and lines it has to leave alone. A new alibi file there needs a folder of samples too, or that test fails. Markdown is left out of the globs, since its prose names the very forms they ban.
-- **A glob that matches nothing passes.** The summary says `no matches in 0 files`, which is how a typo in the glob shows.
-- **A pattern that matches empty text matches everywhere,** such as `a*` or `^`, and fails on every line of every file.
 - **`.` doesn't match a line break** unless the pattern starts with `(?m)`, and `^` and `$` match at every line, as Ruby has them.
 - **`ProjectFile#matches` reads `Regexp.last_match` inside `to_enum(:scan, regexp)`,** which gives each match's position without a hand-written loop that has to step past empty matches. It takes the offset from `pre_match.length`, since RBS types `MatchData#begin` as possibly nil.
 - **Paths in the output start at the project root,** not the folder where Alibi runs. A bare `alibi`, on the other hand, looks for `.config/alibi/` in the folder where it runs, not at the project root.

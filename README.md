@@ -87,7 +87,7 @@ Errors go to standard error, one line each, starting with `alibi:` and the alibi
 | --- | --- |
 | 0 | Every alibi file passed, or the command line was `--version` or `--help`. |
 | 1 | An alibi file failed, and none had an error. |
-| 2 | An error: a command line Alibi can't use; an alibi file that is missing, unreadable, or isn't valid; a pattern Alibi refuses; an alibi file outside a git working tree; a matched file that isn't UTF-8 text; or a bare `alibi` with no `*.kdl` file in `.config/alibi/`. |
+| 2 | An error: a command line Alibi can't use; an alibi file that is missing, unreadable, or isn't valid; a glob that matches no file; a pattern Alibi refuses; an alibi file outside a git working tree; a matched file that isn't UTF-8 text; or a bare `alibi` with no `*.kdl` file in `.config/alibi/`. |
 
 ### Writing an alibi file
 
@@ -100,11 +100,11 @@ Comments start with `//`. A raw string such as `#"\s*"#` takes no escapes, so a 
 
 **The glob** starts from the project root: the top of the git working tree that holds the alibi file, wherever the alibi file sits in it. `*` matches any part of a name, `**/` matches any number of folders, and braces list alternatives, as in `{lib,test}/**/*.rb`. A `*` also matches a name that starts with a dot. Write `/` between folders on every system. A glob that is absolute, such as `/etc/*` or `C:/src/*`, or that has a `..` segment, is an error.
 
-Alibi matches the glob against the files git tracks and the files git would track: untracked files that no `.gitignore` lists. A new file counts before anyone stages it, and ignored build output never does. Alibi never follows a symlink, and skips a tracked file that has been deleted.
+Alibi matches the glob against the files git tracks and the files git would track: untracked files that no `.gitignore` lists. A new file counts before anyone stages it, and ignored build output never does. Alibi never follows a symlink, and skips a tracked file that has been deleted. A glob that matches no file is an error, since an alibi file that checks nothing most likely has a mistyped glob.
 
 **The pattern** is a regular expression that Alibi runs over each file's whole text, so it can span lines. A match on several lines is shown at the line where it starts. A pattern has no flags in the alibi file; write them inline, such as `(?i)` to ignore case or `(?m)` to let `.` match a line break.
 
-Alibi refuses a pattern that Ruby can't match in linear time, so no pattern can hang it. Back-references, captures inside lookarounds, nested quantifiers, the absence operator, and conditionals make a pattern slower than that. Lookahead and lookbehind are allowed. As a backstop, a pattern that runs for more than 2 seconds over one file is an error.
+Alibi refuses a pattern that can match empty text, such as `a*` or `^`, because it would match at every position of every file; write it so that every match has at least one character. Alibi also refuses a pattern that Ruby can't match in linear time, so no pattern can hang it. Back-references, captures inside lookarounds, nested quantifiers, the absence operator, and conditionals make a pattern slower than that. Lookahead and lookbehind are allowed. As a backstop, a pattern that runs for more than 2 seconds over one file is an error.
 
 Alibi reads each file as UTF-8 and reads each CRLF line break as LF, so a Windows checkout gets the same verdict as a Linux one. A file the glob matches that isn't valid UTF-8, such as an image, is an error: write the glob so that it matches only text files.
 

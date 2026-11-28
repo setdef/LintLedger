@@ -42,8 +42,26 @@ class PatternTest < Minitest::Test
     )
   end
 
+  def test_a_pattern_that_can_match_empty_text_is_an_error
+    ["a*", "^", "$", "x?", "", "(?:a|)", "\\z"].each do |source|
+      error = assert_raises(Alibi::Error, source) { Alibi::Pattern.new(source) }
+
+      assert_equal(
+        "the pattern #{Regexp.new(source).inspect} can match empty text, so it would match at every position of " \
+          "every file: write it so that every match has at least one character",
+        error.message
+      )
+    end
+  end
+
+  def test_a_pattern_that_needs_a_character_is_allowed
+    ["a+", "^x", "(?<=a)b", "\\bTODO\\b", "\\A\\s+\\z"].each do |source|
+      assert_equal(Regexp.new(source).inspect, Alibi::Pattern.new(source).to_s)
+    end
+  end
+
   def test_stops_after_its_timeout
-    pattern = Alibi::Pattern.new("\\A(?:a|b)*\\z", timeout: 0.000_001)
+    pattern = Alibi::Pattern.new("\\A(?:a|b)+\\z", timeout: 0.000_001)
 
     assert_raises(Alibi::Error) { pattern.matches(Alibi::ProjectFile.new("big.txt", "#{'ab' * 500_000}x")) }
   end

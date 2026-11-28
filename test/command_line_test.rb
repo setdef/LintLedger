@@ -77,6 +77,14 @@ class CommandLineTest < Minitest::Test
     assert_equal("alibi: bad.kdl: no `pattern` node: add one, with a regexp\n", @err.string)
   end
 
+  def test_a_glob_that_matches_no_file_is_an_error_that_names_the_alibi_file_and_the_glob
+    write(["typo.kdl", %(files "lib/**/*.ts"\npattern "x"\n)])
+
+    assert_equal(2, run_with("typo.kdl"))
+    assert_match(%r{\Aalibi: typo\.kdl: the glob "lib/\*\*/\*\.ts" matches no file}, @err.string)
+    assert_empty(@out.string)
+  end
+
   def test_with_no_alibi_file_checks_each_one_in_the_alibi_folder_by_name
     write([".config/alibi/todos.kdl", TODOS], [".config/alibi/fixmes.kdl", FIXMES], [".config/alibi/notes.txt", "x"])
 

@@ -3,8 +3,10 @@ module Alibi
   # Alibi runs over the whole text of each file the glob matches, so a pattern can span
   # lines. It has no flags: write them inline, as `(?i)` or `(?m)`.
   #
-  # Alibi refuses a pattern that Ruby can't match in linear time, so no pattern can hang
-  # it, and stops one that runs for more than 2 seconds over one file.
+  # Alibi refuses a pattern that can match empty text, such as `a*` or `^`, since it would
+  # match at every position of every file. It refuses a pattern that Ruby can't match in
+  # linear time, so no pattern can hang it, and stops one that runs for more than 2
+  # seconds over one file.
   #
   # === Examples
   #
@@ -21,8 +23,9 @@ module Alibi
     # The pattern +source+, as an alibi file has it, which stops after +timeout+ seconds
     # over one file.
     #
-    # Raises Error when +source+ isn't a valid Ruby regexp, or when Ruby can't match it
-    # in linear time, as it can't a pattern with a back-reference, a capture inside a
+    # Raises Error when +source+ isn't a valid Ruby regexp, when the pattern can match
+    # empty text, as `a*` and `^` can, since it would match at every position of every
+    # file, or when Ruby can't match it in linear time, as it can't a pattern with a back-reference, a capture inside a
     # lookaround, nested quantifiers, the absence operator, or a conditional. Lookahead
     # and lookbehind are allowed.
     def initialize: (String source, ?timeout: Float) -> void
@@ -35,6 +38,10 @@ module Alibi
 
     # The pattern as a regexp literal, such as `/TODO/`.
     def to_s: () -> String
+
+    private def refuse_empty_matches: () -> void
+
+    private def refuse_superlinear: () -> void
 
     private def compile: (String source, Float timeout) -> Regexp
   end

@@ -1,7 +1,7 @@
 module Alibi
   # The verdict on one alibi file: the files its glob matched, and every match of its
   # pattern in them, which it enumerates. An alibi file passes when its pattern matches
-  # nothing, which it does too when its glob matches no file.
+  # nothing.
   #
   # === Examples
   #

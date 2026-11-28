@@ -23,10 +23,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   an error, and so is an `alibi` node: this version doesn't read alibis.
 - Alibi refuses a pattern that Ruby can't match in linear time, and stops a pattern that runs for more than 2
   seconds over one file.
+- Alibi refuses a pattern that can match empty text, such as `a*` or `^`, since it would match at every position
+  of every file.
+- An alibi file whose glob matches no file in the project is an error, not a pass: its glob most likely has a typo.
 - Alibi reads each file as UTF-8, with CRLF line breaks as LF.
 - Alibi exits with 0 when every alibi file passes, 1 when one fails, and 2 on an error, which outweighs a failure:
-  a command line it can't use, an alibi file that is missing, unreadable, or invalid, a pattern it refuses, an
-  alibi file outside a git working tree, a matched file that isn't UTF-8 text, or a bare `alibi` with no `*.kdl`
-  file in `.config/alibi/`.
+  a command line it can't use, an alibi file that is missing, unreadable, or invalid, a glob that matches no
+  file, a pattern it refuses, an alibi file outside a git working tree, a matched file that isn't UTF-8 text, or a
+  bare `alibi` with no `*.kdl` file in `.config/alibi/`.
 
 [Unreleased]: https://github.com/setdef/Alibi/commits/trunk

@@ -41,9 +41,13 @@ module Alibi
     # The verdict on +project+: the pattern run over each file the glob matches, and
     # over no other file.
     #
-    # Raises Error when a file the glob matches isn't UTF-8 text, or when the pattern
-    # runs over one for longer than its timeout.
+    # Raises Error when the glob matches no file in +project+, since an alibi file that
+    # checks nothing most likely has a mistyped glob. Raises Error when a file the glob
+    # matches isn't UTF-8 text, or when the pattern runs over one for longer than its
+    # timeout.
     def check: (_Project project) -> Verdict
+
+    private def files_in: (_Project project) -> Array[String]
 
     # Reads the KDL of an alibi file into an AlibiFile.
     class Parser

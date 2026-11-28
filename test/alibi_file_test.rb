@@ -31,11 +31,17 @@ class AlibiFileTest < Minitest::Test
     assert_predicate(check(["lib/a.rb", "done\n"], ["logo.png", "\xFF".b]), :passed?)
   end
 
-  def test_passes_when_its_glob_matches_no_file
-    verdict = check
+  def test_a_glob_that_matches_no_file_is_an_error
+    error = assert_raises(Alibi::Error) { check(["test/a.rb", "# TODO\n"]) }
 
-    assert_predicate(verdict, :passed?)
-    assert_equal(0, verdict.files_checked)
+    assert_equal(
+      'the glob "lib/**/*.rb" matches no file in the project: check it for a typo, or delete the alibi file',
+      error.message
+    )
+  end
+
+  def test_a_project_with_no_file_is_an_error_too
+    assert_raises(Alibi::Error) { check }
   end
 
   def test_keeps_the_line_and_column_of_a_kdl_syntax_error
