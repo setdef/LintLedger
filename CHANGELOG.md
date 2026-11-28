@@ -10,7 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Each GitHub release carries a build of Alibi for macOS on Apple silicon, Linux with glibc or musl on x86-64 and
-  ARM64, and Windows on x64 and ARM64, and `mise` installs it from there. The build includes its own Ruby, so the
+  ARM64, and Windows on x64 and ARM64, and `mise` installs it from there. The build includes Ruby, so the
   computer needs none.
 - `alibi --version` prints the version of Alibi.
 - `alibi --help` prints a usage line.

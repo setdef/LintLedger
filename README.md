@@ -33,7 +33,7 @@ $ alibi
 
 ## Install
 
-Alibi installs through [mise](https://mise.jdx.dev/) from its [GitHub releases](https://github.com/setdef/Alibi/releases). Each release has a build for each platform, and the build carries its own Ruby, so your computer needs none. Put this in a project's `mise.toml`, or in `~/.config/mise/config.toml` for every project, and run `mise install`:
+Alibi installs through [mise](https://mise.jdx.dev/) from its [GitHub releases](https://github.com/setdef/Alibi/releases). Each release has a build for each platform, and each build includes Ruby, so your computer needs none. Put this in a project's `mise.toml`, or in `~/.config/mise/config.toml` for every project, and run `mise install`:
 
 ```toml
 [tools."github:setdef/Alibi"]
@@ -49,7 +49,7 @@ windows-x64 = { asset_pattern = "alibi-x64-mingw-ucrt.zip" }
 windows-arm64 = { asset_pattern = "alibi-aarch64-mingw-ucrt.zip" }
 ```
 
-`mise exec -- alibi --version` then prints the installed version. `strip_components` and `bin_path` put the `alibi` program on your `PATH` and leave out the Ruby that comes in the build. Without them, mise puts that Ruby ahead of your own.
+`mise exec -- alibi --version` then prints the installed version. With `strip_components` and `bin_path`, mise puts the `alibi` program on your `PATH` and leaves out the Ruby that comes in the build. Without them, mise puts that Ruby first on your `PATH`, ahead of any Ruby you use.
 
 On Linux with [musl](https://musl.libc.org/), such as [Alpine](https://alpinelinux.org/), use the musl builds:
 
