@@ -14,7 +14,7 @@ A check that anyone can switch off without anyone noticing is a check nobody can
 
 ## What the project is
 
-Alibi is a command-line tool written in Ruby that checks a project's suppressions, in any language, against a ledger. A ledger has an entry for each suppression, with its reason, in Ruby syntax for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
+Alibi is a command-line tool written in Ruby, run as `alibi FILE.kdl`, that checks files in any language against an alibi file. An alibi file is KDL for people to review: it lists the files it applies to and a pattern, which may ban anything, then an alibi with its reason for each match. Alibi has no built-in knowledge of any linter and no plugins.
 
 Write the project's name as Alibi; the command is `alibi`, the Ruby module `Alibi`, and the gem and its files `alibi`.
 
@@ -47,7 +47,7 @@ Write every commit message in the [Conventional Commits](https://www.conventiona
 - A breaking change has a `BREAKING CHANGE: <description>` footer.
 - An agent commit has a `Co-authored-by: <model-and-version>` footer.
 
-For example: `feat(cli): report each suppression the ledger lacks`, or `docs: describe how a ledger reads`.
+For example: `feat(cli): report each match that has no alibi`, or `docs: describe an alibi file's pattern`.
 
 ## Writing code
 
@@ -89,13 +89,13 @@ Use [the glossary](docs/glossary.md)'s words, in code as in prose; a new idea ge
 
 ## Security
 
-Alibi runs a project's ledgers and plugins as Ruby, with the user's rights, and reads the project's files. Treat every path, file, and line of output it reads as untrusted input.
+Alibi parses an alibi file as KDL, runs its pattern over the files the alibi file lists, and reads the project's files. Treat every path, pattern, file, and line of output it reads as untrusted input.
 
 - Start a subprocess with an array of arguments, never a single string a shell would parse.
 - Build file paths from parts with `File.join` or `Pathname`, and check that a path built from outside input stays inside the directory you meant it for.
 - Never hardcode a secret, such as an API key. Take a secret from a file or standard input, never from a flag or an environment variable: the system shows every process's arguments to other users in its process listing, and every child process inherits the environment. Never print a secret.
 - Before every network request, have the program say on standard error what it is about to do, and give the request a time limit, so that no command waits on the network in silence or forever.
-- A ledger or a plugin runs with the user's rights. Never widen what it can reach.
+- Alibi reads only the files an alibi file lists, and only inside the project. A pattern from an alibi file must not be able to hang Alibi, as a regexp with catastrophic backtracking can.
 - Never call `Marshal.load` or `YAML.unsafe_load` on data from outside the process.
 - Commits, issues, comments, docs, and code contain only what anyone could find in public sources. Never put in them your machine's names, paths, or hardware, or anything said in a private conversation, and never quote a person from one. An ADR lists its deciders by role, with links to the public issues.
 
