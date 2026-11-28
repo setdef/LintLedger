@@ -1,0 +1,103 @@
+# Releases what the calling CI run built, for the run of a pushed v0.X.Y tag.
+# CI's last job calls it with `uses:`. It stands in for setdef/Cutter's
+# release workflow, which takes the same `artifact` input and the same
+# permissions: when that workflow is published, the caller's `uses:` line
+# changes and this file goes.
+#
+# In order, it checks that the tag is v0.X.Y (three plain integers, never
+# 1.0.0 or above), that the tag is annotated, still points at the commit this
+# run built, and that commit is on trunk, and that every other job of this
+# run succeeded. It then writes SHA256SUMS, signs a build provenance
+# attestation for each file, and publishes the GitHub release through a
+# draft: the archives, then SHA256SUMS last, then the publishing. The
+# release is created from the existing tag, with no target commit, since
+# GitHub refuses a target when trunk's tip has changed workflow files. It
+# publishes nowhere but GitHub.
+
+name: Release
+
+on:
+  workflow_call:
+    inputs:
+      artifact:
+        description: The name of the artifact that the calling run uploaded with the files to publish
+        required: true
+        type: string
+    outputs:
+      tag:
+        description: The tag the run released, or empty when a check stopped it
+        value: ${{ jobs.release.outputs.tag }}
+      version:
+        description: The version the run released, such as 0.4.0
+        value: ${{ jobs.release.outputs.version }}
+
+permissions: {}
+
+jobs:
+  release:
+    name: release
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+    # One release at a time in the repository.
+    concurrency:
+      group: alibi-release
+      cancel-in-progress: false
+    outputs:
+      tag: ${{ steps.version.outputs.tag }}
+      version: ${{ steps.version.outputs.version }}
+    env:
+      GH_TOKEN: ${{ github.token }}
+      GH_REPO: ${{ github.repository }}
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Check that the tag is v0.X.Y
+        id: version
+        run: |
+          version=$(.github/scripts/check-release-tag.sh "$GITHUB_REF_NAME")
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "tag=$GITHUB_REF_NAME" >> "$GITHUB_OUTPUT"
+
+      - name: Check the tag against the commit this run built, and trunk
+        run: .github/scripts/check-tag-on-trunk.sh "$GITHUB_REF_NAME" "$GITHUB_SHA"
+
+      - name: Check that every other job of this run succeeded
+        run: .github/scripts/check-run-jobs.sh "$OWN_JOB_ID"
+        env:
+          OWN_JOB_ID: ${{ job.check_run_id }}
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: ${{ inputs.artifact }}
+          path: files
+
+      - name: Write SHA256SUMS
+        working-directory: files
+        run: |
+          [ -n "$(ls)" ] || { echo "the artifact holds no file"; exit 1; }
+          [ ! -e SHA256SUMS ] || { echo "the artifact holds a SHA256SUMS file, which this job writes"; exit 1; }
+          sha256sum -- * > SHA256SUMS
+          sha256sum --check SHA256SUMS
+
+      # Signs a build provenance statement for each file the release
+      # attaches, with the workflow's identity, so that `gh attestation
+      # verify` can check a download against this repository.
+      - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        with:
+          subject-path: files/*
+
+      - name: Write the release notes
+        run: .github/scripts/release-notes.sh > notes.md
+
+      - name: Publish the release through a draft
+        run: .github/scripts/publish-release.sh "$GITHUB_REF_NAME" "Alibi ${{ steps.version.outputs.version }}" files notes.md

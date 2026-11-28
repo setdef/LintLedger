@@ -1,9 +1,17 @@
-# The gate (`bundle exec rake`) on Linux, macOS, and Windows, for every push to trunk.
+# The gate (`bundle exec rake`) on Linux, macOS, and Windows, for every push to
+# trunk and every pushed v0.X.Y tag.
+#
+# A tag's run also builds Alibi with Fledge for every platform Fledge
+# supports, on a runner of each, with the tag's version stamped into the
+# build, and runs each archive with no Ruby on PATH. Its last job releases
+# what the run built, through release.yml, and a job after that installs the
+# release through mise and runs it. A trunk run builds and releases nothing.
 name: CI
 
 on:
   push:
     branches: [trunk]
+    tags: ["v0.*.*"]
 
 permissions:
   contents: read
@@ -11,10 +19,11 @@ permissions:
 # Every push to trunk gets a run of its own, and nothing cancels it. A group
 # shared by all of trunk's runs leaves one run going and one waiting, and a
 # newer push cancels the waiting run even with cancel-in-progress off, so
-# under frequent pushes almost no run finished. Here a trunk run's group is its
-# commit, so runs go side by side and every commit's run finishes.
+# under frequent pushes almost no run finished. Here a run's group is its ref
+# and commit, so runs go side by side and every commit's run finishes, and a
+# tag's run doesn't wait for the run of the commit it tags.
 concurrency:
-  group: ${{ github.workflow }}-${{ github.sha }}
+  group: ${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
   cancel-in-progress: false
 
 defaults:
@@ -77,3 +86,262 @@ jobs:
 
       - name: Run the gate
         run: bundle exec rake
+
+  # A tag's run builds each platform Fledge supports on a runner of that
+  # platform, since Fledge builds only for the computer it runs on. The
+  # musl platforms build in Alpine's Ruby image with `docker run`, since
+  # GitHub's JavaScript actions can't run in an Alpine job container on an
+  # ARM runner. The Linux archives are built on Ubuntu 24.04, whose glibc
+  # 2.39 is the oldest Fledge runs on.
+  build:
+    name: Build (${{ matrix.platform }})
+    if: github.ref_type == 'tag'
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: arm64-darwin
+            runner: macos-15
+          - platform: x86_64-linux
+            runner: ubuntu-24.04
+          - platform: aarch64-linux
+            runner: ubuntu-24.04-arm
+          - platform: x86_64-linux-musl
+            runner: ubuntu-24.04
+            musl: true
+          - platform: aarch64-linux-musl
+            runner: ubuntu-24.04-arm
+            musl: true
+          - platform: x64-mingw-ucrt
+            runner: windows-2025
+            mise: http:rubyinstaller-head http:msys2-zlib http:msys2-libgcc http:msys2
+          - platform: aarch64-mingw-ucrt
+            runner: windows-11-arm
+            mise: http:rubyinstaller-head http:msys2-zlib http:msys2
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+        if: runner.os != 'Windows' && !matrix.musl
+        with:
+          version: 2026.10.11
+          install_args: ruby
+
+      # PATH holds the tools' own folders, not mise's shims, so that
+      # ruby.exe is RubyInstaller's.
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+        if: runner.os == 'Windows'
+        env:
+          TEMP: ${{ runner.temp }}
+          TMP: ${{ runner.temp }}
+        with:
+          version: 2026.10.11
+          install_args: ${{ matrix.mise }}
+          add_shims_to_path: false
+          mise_dir: ${{ runner.temp }}\mise
+
+      - name: Give Windows' Ruby the rest of its environment
+        if: runner.os == 'Windows'
+        run: .github/scripts/windows-ruby-env.sh
+
+      # The build refuses a checkout that holds an untracked or ignored file,
+      # so the bundle goes outside it.
+      - name: Place Bundler outside the checkout
+        run: echo "BUNDLE_PATH=$RUNNER_TEMP/alibi-bundle" >> "$GITHUB_ENV"
+
+      - name: Build the archive
+        if: ${{ !matrix.musl }}
+        run: .github/scripts/build-archive.sh "$PLATFORM" "$(.github/scripts/check-release-tag.sh "$GITHUB_REF_NAME")" archives
+        env:
+          PLATFORM: ${{ matrix.platform }}
+
+      - name: Build the archive in Alpine
+        if: matrix.musl
+        run: >-
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work -e BUNDLE_PATH=/tmp/alibi-bundle -e BUNDLE_FROZEN
+          "$ALPINE_RUBY" sh .github/scripts/build-archive-alpine.sh "$PLATFORM" "$(.github/scripts/check-release-tag.sh "$GITHUB_REF_NAME")" archives
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          # The Ruby image Fledge builds musl apps in, 4.1.0-preview1, by digest.
+          ALPINE_RUBY: ruby:4.1.0-preview1-alpine3.24@sha256:3377ef9d7e5c4c430ccc9c3459d172158c575771e1aac2010702dee54388ace0
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: archive-${{ matrix.platform }}
+          path: archives/
+          if-no-files-found: error
+          # The archives are compressed already.
+          compression-level: 0
+
+  # Runs each archive on a fresh runner of its platform, with an empty PATH,
+  # so that a Ruby on the runner is out of reach. The Linux archives run in
+  # bare images that have no Ruby at all.
+  smoke:
+    name: Smoke test (${{ matrix.platform }})
+    needs: build
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: arm64-darwin
+            runner: macos-15
+          - platform: x86_64-linux
+            runner: ubuntu-24.04
+            image: ubuntu:24.04@sha256:562111b88caa79c71391c0c4d3c2114a7d5c35915c20561fd893cb1e07929e6b
+          - platform: aarch64-linux
+            runner: ubuntu-24.04-arm
+            image: ubuntu:24.04@sha256:562111b88caa79c71391c0c4d3c2114a7d5c35915c20561fd893cb1e07929e6b
+          - platform: x86_64-linux-musl
+            runner: ubuntu-24.04
+            image: alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+          - platform: aarch64-linux-musl
+            runner: ubuntu-24.04-arm
+            image: alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+          - platform: x64-mingw-ucrt
+            runner: windows-2025
+          - platform: aarch64-mingw-ucrt
+            runner: windows-11-arm
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+          sparse-checkout: .github/scripts
+          sparse-checkout-cone-mode: false
+
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: archive-${{ matrix.platform }}
+          path: archives
+
+      - name: Run alibi from the archive
+        if: ${{ !matrix.image }}
+        timeout-minutes: 5
+        run: .github/scripts/smoke-archive.sh archives/alibi-"$PLATFORM".* "$(.github/scripts/check-release-tag.sh "$GITHUB_REF_NAME")"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+
+      - name: Run alibi from the archive in a bare image
+        if: matrix.image
+        timeout-minutes: 5
+        run: >-
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -w /work "$IMAGE"
+          sh -c 'command -v bash > /dev/null || apk add --no-cache bash > /dev/null; exec bash .github/scripts/smoke-archive.sh archives/alibi-"$0".tar.gz "$1"'
+          "$PLATFORM" "$(.github/scripts/check-release-tag.sh "$GITHUB_REF_NAME")"
+        env:
+          PLATFORM: ${{ matrix.platform }}
+          IMAGE: ${{ matrix.image }}
+
+  # The archives of every platform in one artifact, which the release job
+  # publishes.
+  collect:
+    name: Collect the archives
+    needs: smoke
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/upload-artifact/merge@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release
+          pattern: archive-*
+          delete-merged: true
+          compression-level: 0
+
+  # Last job of a tag's run, once the gate, the builds, and the smoke tests
+  # have passed.
+  release:
+    name: Release
+    if: github.ref_type == 'tag'
+    needs: [gate, build, smoke, collect]
+    permissions:
+      actions: read
+      attestations: write
+      contents: write
+      id-token: write
+    uses: ./.github/workflows/release.yml
+    with:
+      artifact: release
+
+  # Installs the published release through mise's github backend, as
+  # README.md says, on a computer of each platform with no Ruby on PATH, and
+  # runs it. Nothing downstream waits for this job: the release is public
+  # already, so a failure here reports a release to fix.
+  install:
+    name: Install through mise (${{ matrix.platform }})
+    needs: release
+    runs-on: ${{ matrix.runner }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - platform: arm64-darwin
+            runner: macos-15
+            recipe: 1
+          - platform: x86_64-linux
+            runner: ubuntu-24.04
+            recipe: 1
+          - platform: aarch64-linux
+            runner: ubuntu-24.04-arm
+            recipe: 1
+          - platform: x86_64-linux-musl
+            runner: ubuntu-24.04
+            recipe: 2
+            image: alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+          - platform: aarch64-linux-musl
+            runner: ubuntu-24.04-arm
+            recipe: 2
+            image: alpine:3.24.3@sha256:be2656061b536c1883c4034790e21d0a09c5aaaf51968b89368a3c0371ea2c9a
+          - platform: x64-mingw-ucrt
+            runner: windows-2025
+            recipe: 1
+          - platform: aarch64-mingw-ucrt
+            runner: windows-11-arm
+            recipe: 1
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: false
+          sparse-checkout: |
+            .github/scripts
+            README.md
+          sparse-checkout-cone-mode: false
+
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+        if: ${{ !matrix.image }}
+        with:
+          version: 2026.10.11
+          install: false
+          cache: false
+
+      - name: Install through mise and run alibi
+        if: ${{ !matrix.image }}
+        timeout-minutes: 10
+        run: |
+          mkdir "$RUNNER_TEMP/install"
+          cd "$RUNNER_TEMP/install"
+          "$GITHUB_WORKSPACE/.github/scripts/verify-mise-install.sh" "$VERSION" "$RECIPE"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          RECIPE: ${{ matrix.recipe }}
+          GH_TOKEN: ${{ github.token }}
+          MISE_GITHUB_TOKEN: ${{ github.token }}
+
+      - name: Install through mise and run alibi in Alpine
+        if: matrix.image
+        timeout-minutes: 10
+        run: >-
+          docker run --rm -v "$GITHUB_WORKSPACE:/work" -e MISE_GITHUB_TOKEN "$IMAGE"
+          sh -c 'apk add --no-cache bash mise > /dev/null && mkdir /tmp/install && cd /tmp/install && exec bash /work/.github/scripts/verify-mise-install.sh "$0" "$1"'
+          "$VERSION" "$RECIPE"
+        env:
+          VERSION: ${{ needs.release.outputs.version }}
+          RECIPE: ${{ matrix.recipe }}
+          IMAGE: ${{ matrix.image }}
+          MISE_GITHUB_TOKEN: ${{ github.token }}
