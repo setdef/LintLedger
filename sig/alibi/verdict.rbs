@@ -1,0 +1,31 @@
+module Alibi
+  # The verdict on one alibi file: the files its glob matched, and every match of its
+  # pattern in them, which it enumerates. An alibi file passes when its pattern matches
+  # nothing, which it does too when its glob matches no file.
+  #
+  # === Examples
+  #
+  #   verdict = Alibi::Verdict.new(paths: ["lib/a.rb", "lib/b.rb"], matches: [])
+  #   verdict.passed?
+  #   # => true
+  #   verdict.files_checked
+  #   # => 2
+  class Verdict
+    include Enumerable[Match]
+
+    @paths: Array[String]
+    @matches: Array[Match]
+
+    # The verdict on the files at +paths+, which hold +matches+.
+    def initialize: (paths: Array[String], matches: Array[Match]) -> void
+
+    # Yields each match, in the order of the files, then of their text.
+    def each: () { (Match match) -> void } -> Array[Match]
+
+    # How many files the glob matched, which Alibi read.
+    def files_checked: () -> Integer
+
+    # Whether the alibi file passed: true when there is no match.
+    def passed?: () -> bool
+  end
+end

@@ -1,0 +1,47 @@
+module Alibi
+  # Finds a project in a folder, as Alibi::Project.containing does. CommandLine takes one.
+  interface _Projects
+    # The project that holds +folder+.
+    def containing: (String folder) -> _Project
+  end
+
+  # The git working tree that holds an alibi file, and the files Alibi may read in it.
+  #
+  # Its files are those git tracks and those it would track, untracked and not ignored,
+  # so a new file counts before anyone stages it, and build output that `.gitignore` lists
+  # never does. A tracked file that no longer exists, a symlink, and a submodule are not
+  # among them.
+  #
+  # === Examples
+  #
+  #   project = Alibi::Project.containing(".config/alibi")
+  #   project.paths
+  #   # => [".gitignore", "lib/alibi.rb", "lib/alibi/glob.rb"]
+  #   project.file("lib/alibi.rb").text
+  class Project
+    LIST: Array[String]
+
+    @root: String
+
+    # The project whose root is the top of the git working tree that holds +folder+.
+    #
+    # Raises Error when +folder+ isn't inside a git working tree. Raises Errno::ENOENT
+    # when no `git` is on the `PATH`.
+    def self.containing: (String folder) -> Project
+
+    # The project whose root is the folder +root+.
+    def initialize: (String root) -> void
+
+    # The paths of the project's files, from its root, with `/` between folders, in the
+    # order git lists them.
+    def paths: () -> Array[String]
+
+    # The file at +path+, from the root, one of #paths.
+    #
+    # Raises Error when the file isn't UTF-8 text, and SystemCallError when it can't
+    # be read.
+    def file: (String path) -> ProjectFile
+
+    private def regular?: (String path) -> bool
+  end
+end

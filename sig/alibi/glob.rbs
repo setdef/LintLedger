@@ -1,0 +1,38 @@
+module Alibi
+  # The glob of an alibi file, from its `files` node: which of the project's files the
+  # alibi file applies to, by their paths from the project root.
+  #
+  # `*` matches any part of a name, and `**/` any number of folders. A star matches a
+  # name that starts with a dot, as `**/*.yml` matches `.github/workflows/ci.yml`, and
+  # braces list alternatives, as in `{lib,test}/**/*.rb`. Paths use `/` between folders
+  # on every system.
+  #
+  # === Examples
+  #
+  #   Alibi::Glob.new("lib/**/*.rb").select(["lib/alibi.rb", "lib/alibi/glob.rb", "test/glob_test.rb"])
+  #   # => ["lib/alibi.rb", "lib/alibi/glob.rb"]
+  #   Alibi::Glob.new("../shared/*.rb")
+  #   # raises Alibi::Error
+  class Glob
+    FLAGS: Integer
+    ABSOLUTE: Regexp
+    SEPARATOR: Regexp
+
+    @text: String
+
+    # The glob +text+, as an alibi file has it.
+    #
+    # Raises Error when +text+ is absolute (it starts with `/`, `\`, `~`, or a drive
+    # such as `C:`) or has a `..` segment, on every system, since a glob reaches only
+    # the files inside the project root.
+    def initialize: (String text) -> void
+
+    # The +paths+ the glob matches, in their order.
+    def select: (Array[String] paths) -> Array[String]
+
+    # The glob as the alibi file has it.
+    def to_s: () -> String
+
+    private def outside_root: () -> String?
+  end
+end

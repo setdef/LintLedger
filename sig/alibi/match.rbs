@@ -1,0 +1,20 @@
+module Alibi
+  # One match of an alibi file's pattern: where it is, and the line where it starts.
+  #
+  # === Examples
+  #
+  #   Alibi::Match.new(path: "lib/app.rb", line: 3, text: "x = 1 # TODO").to_s
+  #   # => "lib/app.rb:3: x = 1 # TODO"
+  class Match
+    @path: String
+    @line: Integer
+    @text: String
+
+    # The match in the file at +path+, from the project root, that starts on +line+,
+    # counting from 1, whose text, without its line break, is +text+.
+    def initialize: (path: String, line: Integer, text: String) -> void
+
+    # The match as `PATH:LINE: TEXT`, the form editors and terminals link to the line.
+    def to_s: () -> String
+  end
+end

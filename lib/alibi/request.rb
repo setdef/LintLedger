@@ -4,7 +4,7 @@ require "optparse"
 
 module Alibi
   class Request
-    USAGE = "Usage: alibi [--version] [--help]"
+    USAGE = "Usage: alibi [FILE.kdl ...] [--version] [--help]"
     private_constant(:USAGE)
 
     def initialize(arguments)
@@ -21,9 +21,13 @@ module Alibi
     end
 
     def answers
-      raise(UsageError, "expected --version or --help") unless @leftovers.empty? && !@options.empty?
+      raise(UsageError, "--version and --help take no alibi file") unless @leftovers.empty? || @options.empty?
 
       [(VERSION if @options[:version]), (USAGE if @options[:help])].compact
+    end
+
+    def alibi_files
+      @leftovers.empty? ? yield : @leftovers
     end
   end
 end

@@ -3,19 +3,60 @@
 module Alibi
   class CommandLine
     PASSED = 0
+    FAILED = 1
     ERRORED = 2
-    private_constant(:PASSED, :ERRORED)
+    FOLDER = ".config/alibi"
+    private_constant(:PASSED, :FAILED, :ERRORED, :FOLDER)
 
-    def initialize(out:, err:)
+    def initialize(out:, err:, folder: Dir.pwd, projects: Project)
       @out = out
       @err = err
+      @folder = folder
+      @projects = projects
     end
 
     def run(arguments)
-      @out.puts(Request.new(arguments).answers)
+      request = Request.new(arguments)
+      answer(request.answers) || check_each(request.alibi_files { conventional })
+    rescue UsageError, Error => e
+      fail_with(e.message)
+    end
+
+    private def answer(lines)
+      return if lines.empty?
+
+      @out.puts(lines)
       PASSED
-    rescue UsageError => e
-      @err.puts("alibi: #{e.message}")
+    end
+
+    private def conventional
+      names = Dir.glob("*.kdl", base: File.join(@folder, FOLDER)).sort
+      raise(Error, "no alibi files in #{FOLDER}/: add one there, or name one on the command line") if names.empty?
+
+      names.map { |name| "#{FOLDER}/#{name}" }
+    end
+
+    private def check_each(names)
+      statuses = names.map { |name| check(name) }
+      # The highest status wins, so an error in any alibi file outweighs a failure.
+      statuses.max
+    end
+
+    private def check(name)
+      report_on(name).passed? ? PASSED : FAILED
+    rescue Error, SystemCallError => e
+      fail_with("#{name}: #{e.message}")
+    end
+
+    private def report_on(name)
+      path = File.expand_path(name, @folder)
+      verdict = AlibiFile.parse(File.binread(path)).check(@projects.containing(File.dirname(path)))
+      Report.new(name, verdict).write(@out)
+      verdict
+    end
+
+    private def fail_with(message)
+      @err.puts("alibi: #{message}")
       ERRORED
     end
   end

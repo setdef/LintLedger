@@ -1,0 +1,33 @@
+module Alibi
+  # A project file: a file in the project, by its path from the project root, with its
+  # text as Alibi matches against it. That text is UTF-8, with each CRLF line break turned
+  # into LF, so a Windows checkout gets the verdict a Linux checkout does.
+  #
+  # === Examples
+  #
+  #   file = Alibi::ProjectFile.new("lib/app.rb", "x = 1\r\ny = 2 # TODO\r\n".b)
+  #   file.matches(/TODO$/).map(&:to_s)
+  #   # => ["lib/app.rb:2: y = 2 # TODO"]
+  class ProjectFile
+    @path: String
+    @text: String
+
+    # The file at +path+, from the project root, whose bytes are +content+.
+    #
+    # Raises Error, naming +path+, when +content+ isn't valid UTF-8, as the bytes of an
+    # image or an archive aren't.
+    def initialize: (String path, String content) -> void
+
+    # Every match of +regexp+ in the text, in order: two on one line are two matches, and
+    # a match that spans lines is on the line where it starts. A match that starts on a
+    # line break is on the line the break ends.
+    #
+    # Raises Error, naming the file, when +regexp+ runs over the text for longer than
+    # its timeout.
+    def matches: (Regexp regexp) -> Array[Match]
+
+    private def match_at: (Integer offset) -> Match
+
+    private def line_end: (Integer offset) -> Integer
+  end
+end

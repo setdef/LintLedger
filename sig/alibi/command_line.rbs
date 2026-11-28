@@ -1,6 +1,6 @@
 module Alibi
-  # The `alibi` command: reads a command line, writes to the two streams it is given,
-  # and answers with the exit status.
+  # The `alibi` command: reads a command line, checks each alibi file it names, writes to
+  # the two streams it is given, and answers with the exit status.
   #
   # === Examples
   #
@@ -9,24 +9,53 @@ module Alibi
   #   # => 0
   #   out.string
   #   # => "0.0.0\n"
+  #   Alibi::CommandLine.new(out: $stdout, err: $stderr).run([".config/alibi/todos.kdl"])
+  #   # prints ".config/alibi/todos.kdl: passed: no matches in 14 files"
+  #   # => 0
   class CommandLine
     PASSED: Integer
+    FAILED: Integer
     ERRORED: Integer
+    FOLDER: String
 
     @out: IO | StringIO
     @err: IO | StringIO
+    @folder: String
+    @projects: _Projects
 
     # A command that writes its output to +out+ and its errors to +err+, which take
-    # anything with a +puts+ method, such as +$stdout+ and +$stderr+.
-    def initialize: (out: IO | StringIO, err: IO | StringIO) -> void
+    # anything with a +puts+ method, such as +$stdout+ and +$stderr+. It reads the alibi
+    # files it is given from +folder+, and finds the project that holds each one with
+    # +projects+.
+    def initialize: (out: IO | StringIO, err: IO | StringIO, ?folder: String, ?projects: _Projects) -> void
 
-    # Runs the command line +arguments+ and returns the exit status: 0 when every
-    # check passes, which is all that `--version` and `--help` do, and 2 on an error.
+    # Runs the command line +arguments+ and returns the exit status: 0 when every alibi
+    # file passes, 1 when one fails, and 2 when any one has an error, even if another
+    # fails.
     #
-    # `--version` writes the version on a line, and `--help` writes a usage line. A command
-    # line that Alibi can't use, such as an empty one, an option Alibi doesn't have, or
-    # an argument it doesn't expect, writes one line to +err+ that starts with `alibi:`
-    # and returns 2, with nothing on +out+.
+    # With alibi files, it checks each one, in order, and writes its verdict to +out+.
+    # With none, it checks each `*.kdl` file directly in `.config/alibi/` of +folder+, in
+    # order of name. An error in one alibi file, such as a file that is missing or isn't
+    # valid, writes one line to +err+ that starts with `alibi:` and the alibi file's
+    # name, and the rest are still checked.
+    #
+    # `--version` writes the version on a line, and `--help` writes a usage line, each
+    # returning 0. A command line that Alibi can't use, such as an option Alibi doesn't
+    # have or an alibi file beside an option, or a bare `alibi` with no `.config/alibi/`
+    # folder or no `*.kdl` file in it, writes one line to +err+ that starts with
+    # `alibi:` and returns 2, with nothing on +out+.
     def run: (Array[String] arguments) -> Integer
+
+    private def answer: (Array[String] lines) -> Integer?
+
+    private def conventional: () -> Array[String]
+
+    private def check_each: (Array[String] names) -> Integer
+
+    private def check: (String name) -> Integer
+
+    private def report_on: (String name) -> Verdict
+
+    private def fail_with: (String message) -> Integer
   end
 end

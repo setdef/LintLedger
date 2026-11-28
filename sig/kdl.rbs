@@ -1,0 +1,52 @@
+# The part of the kdl gem that Alibi uses, which ships no signatures of its own.
+module KDL
+  # The document that +input+ holds, read as KDL +version+. With +parse_types+ false, a
+  # value with a type annotation keeps its plain value and its annotation.
+  #
+  # Raises Error when +input+ isn't KDL of that version.
+  def self.parse: (String input, version: Integer, parse_types: bool) -> Document
+
+  # A document +input+ isn't valid KDL, with its line and column at the end of the
+  # message.
+  class Error < StandardError
+  end
+
+  # A KDL document.
+  class Document
+    # The nodes at the top of the document.
+    def nodes: () -> Array[Node]
+  end
+
+  # A KDL node.
+  class Node
+    # The name of the node.
+    def name: () -> String
+
+    # The type annotation of the node, or nil.
+    def type: () -> String?
+
+    # The arguments of the node, in order.
+    def arguments: () -> Array[Value]
+
+    # The properties of the node, by name.
+    def properties: () -> Hash[String, Value]
+
+    # The child nodes of the node.
+    def children: () -> Array[Node]
+  end
+
+  # A KDL value.
+  class Value
+    # The type annotation of the value, or nil.
+    def type: () -> String?
+
+    # The value as Ruby has it.
+    def value: () -> (::String | Integer | Float | bool | nil)
+
+    # A KDL string.
+    class String < Value
+      # The string.
+      def value: () -> ::String
+    end
+  end
+end

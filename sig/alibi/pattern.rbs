@@ -1,0 +1,41 @@
+module Alibi
+  # The pattern of an alibi file, from its `pattern` node: a Ruby regular expression that
+  # Alibi runs over the whole text of each file the glob matches, so a pattern can span
+  # lines. It has no flags: write them inline, as `(?i)` or `(?m)`.
+  #
+  # Alibi refuses a pattern that Ruby can't match in linear time, so no pattern can hang
+  # it, and stops one that runs for more than 2 seconds over one file.
+  #
+  # === Examples
+  #
+  #   file = Alibi::ProjectFile.new("lib/app.rb", "x = 1 # TODO\ny = 2\n")
+  #   Alibi::Pattern.new("TODO").matches(file).map(&:to_s)
+  #   # => ["lib/app.rb:1: x = 1 # TODO"]
+  #   Alibi::Pattern.new("(a)\\1")
+  #   # raises Alibi::Error
+  class Pattern
+    TIMEOUT: Float
+
+    @regexp: Regexp
+
+    # The pattern +source+, as an alibi file has it, which stops after +timeout+ seconds
+    # over one file.
+    #
+    # Raises Error when +source+ isn't a valid Ruby regexp, or when Ruby can't match it
+    # in linear time, as it can't a pattern with a back-reference, a capture inside a
+    # lookaround, nested quantifiers, the absence operator, or a conditional. Lookahead
+    # and lookbehind are allowed.
+    def initialize: (String source, ?timeout: Float) -> void
+
+    # Every match in +file+, as ProjectFile#matches finds them.
+    #
+    # Raises Error, naming the file, when the pattern runs over it for longer than its
+    # timeout.
+    def matches: (ProjectFile file) -> Array[Match]
+
+    # The pattern as a regexp literal, such as `/TODO/`.
+    def to_s: () -> String
+
+    private def compile: (String source, Float timeout) -> Regexp
+  end
+end

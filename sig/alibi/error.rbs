@@ -1,0 +1,8 @@
+module Alibi
+  # A problem that keeps Alibi from reaching a verdict on an alibi file, such as an alibi
+  # file that isn't valid, a pattern Alibi refuses, or a file that isn't UTF-8 text. Its
+  # message is one line that says what is wrong, without the program's name or the alibi
+  # file's.
+  class Error < StandardError
+  end
+end

@@ -1,0 +1,92 @@
+module Alibi
+  # A project, as an alibi file is checked against it: the paths of its files, and each
+  # file by its path. Alibi::Project is one, and a test can pass another.
+  interface _Project
+    # The paths of the project's files, from the project root.
+    def paths: () -> Array[String]
+
+    # The file at +path+, one of #paths.
+    def file: (String path) -> ProjectFile
+  end
+
+  # An alibi file: KDL that has a `files` node with its glob and a `pattern` node with its
+  # pattern, each with one string argument and nothing else.
+  #
+  #   // Every TODO waits on an issue instead.
+  #   files "lib/**/*.rb"
+  #   pattern #"TODO\b"#
+  #
+  # === Examples
+  #
+  #   alibi_file = Alibi::AlibiFile.parse(File.binread(".config/alibi/todos.kdl"))
+  #   alibi_file.check(Alibi::Project.containing(".config/alibi")).passed?
+  #   # => true
+  class AlibiFile
+    @glob: Glob
+    @pattern: Pattern
+
+    # The alibi file whose glob is +glob+ and whose pattern is +pattern+.
+    def initialize: (glob: Glob, pattern: Pattern) -> void
+
+    # The alibi file whose KDL is +source+, as bytes or as a string.
+    #
+    # Raises Error when +source+ isn't UTF-8, isn't KDL 2 (the message ends with the line
+    # and column, as `(1:9)`), or has anything but one `files` node and one `pattern`
+    # node, each with one string argument and nothing else: an unknown node, a second
+    # one, another argument, a property, a child, or a type annotation. An `alibi` node is
+    # an error too, since this version of Alibi doesn't read alibis. Raises Error when
+    # Glob.new or Pattern.new refuses the glob or the pattern.
+    def self.parse: (String source) -> AlibiFile
+
+    # The verdict on +project+: the pattern run over each file the glob matches, and
+    # over no other file.
+    #
+    # Raises Error when a file the glob matches isn't UTF-8 text, or when the pattern
+    # runs over one for longer than its timeout.
+    def check: (_Project project) -> Verdict
+
+    # Reads the KDL of an alibi file into an AlibiFile.
+    class Parser
+      NODES: Hash[Symbol, String]
+
+      @nodes: Array[Node]
+
+      # The parser of +source+. Raises Error as AlibiFile.parse does when +source+ isn't
+      # UTF-8 or isn't KDL 2.
+      def initialize: (String source) -> void
+
+      # The alibi file, or Error as AlibiFile.parse raises it.
+      def alibi_file: () -> AlibiFile
+
+      private def once: (Symbol name) -> void
+
+      private def string: (Symbol name) -> String
+    end
+
+    # One node at the top of an alibi file's KDL, such as `files "lib/**/*.rb"`.
+    class Node
+      @node: KDL::Node
+
+      # The alibi file's view of the KDL +node+.
+      def initialize: (KDL::Node node) -> void
+
+      # Whether the node's name is +name+.
+      def named?: (Symbol name) -> bool
+
+      # Raises Error unless +names+, the nodes an alibi file may have, has the node's
+      # name. An `alibi` node has its own message, since this version of Alibi doesn't
+      # read alibis.
+      def known: (Hash[Symbol, String] names) -> void
+
+      # The node's one string argument when the node's name is +name+, and nil when it
+      # isn't. Raises Error when the node is named +name+ and has no argument, another
+      # argument, an argument that isn't a string, a property, a child, or a type
+      # annotation on itself or its argument.
+      def string_if_named: (Symbol name) -> String?
+
+      private def string: () -> String
+
+      private def plain?: (KDL::Value argument) -> bool
+    end
+  end
+end

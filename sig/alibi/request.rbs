@@ -1,10 +1,15 @@
 module Alibi
-  # What a command line asks Alibi to print.
+  # What a command line asks Alibi to do: print the version or the usage line, or check
+  # alibi files.
   #
   # === Examples
   #
   #   Alibi::Request.new(["--version"]).answers
   #   # => ["0.0.0"]
+  #   Alibi::Request.new(["todos.kdl"]).alibi_files { [".config/alibi/todos.kdl"] }
+  #   # => ["todos.kdl"]
+  #   Alibi::Request.new([]).alibi_files { [".config/alibi/todos.kdl"] }
+  #   # => [".config/alibi/todos.kdl"]
   class Request
     USAGE: String
 
@@ -12,12 +17,17 @@ module Alibi
     @leftovers: Array[String]
 
     # A request read from the command line +arguments+. Raises UsageError when +arguments+
-    # name an option Alibi doesn't have.
+    # name an option Alibi doesn't have, or abbreviate one.
     def initialize: (Array[String] arguments) -> void
 
-    # The lines to print, `--version` before `--help`, for the options that the arguments name.
+    # The lines to print, `--version` before `--help`, for the options that the arguments
+    # name: empty when they name neither, as a request to check alibi files does.
     #
-    # Raises UsageError when the arguments are empty or hold anything but those two options.
+    # Raises UsageError when the arguments name an option and an alibi file.
     def answers: () -> Array[String]
+
+    # The names of the alibi files to check, as the command line gives them. A bare
+    # `alibi` gives none, and then the names are what the block returns.
+    def alibi_files: () { () -> Array[String] } -> Array[String]
   end
 end
