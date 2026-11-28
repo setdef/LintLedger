@@ -1,0 +1,29 @@
+module Alibi
+  # A hash of each run of numbers in a sequence, found in constant time once the hash has
+  # seen the whole sequence: the polynomial hash of Rabin and Karp's string search, over
+  # numbers instead of characters. Equal runs always hash alike, and runs that differ,
+  # in their numbers or in how many there are, rarely do, so a caller compares the runs
+  # whose hashes are equal.
+  #
+  # === Examples
+  #
+  #   hashes = Alibi::RollingHash.new([7, 8, 9, 7, 8])
+  #   hashes.of(0, 2) == hashes.of(3, 2)
+  #   # => true
+  #   hashes.of(0, 2) == Alibi::RollingHash.new([7, 8]).of(0, 2)
+  #   # => true
+  class RollingHash
+    BASE: Integer
+    MODULUS: Integer
+
+    @prefixes: Array[Integer]
+
+    # The hashes of the runs in +numbers+, a sequence of integers from 0 up, each under
+    # 2**41. Costs the length of +numbers+.
+    def initialize: (Array[Integer] numbers) -> void
+
+    # The hash, an integer from 0 up to 2**31, of the +size+ numbers that start at index
+    # +start+, a run that ends inside the sequence: 0 for a run of no numbers.
+    def of: (Integer start, Integer size) -> Integer
+  end
+end

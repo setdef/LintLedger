@@ -1,0 +1,35 @@
+module Alibi
+  # The lines of one file's text, each without its leading whitespace, indexed so that
+  # Snippet#places_in finds where a run of lines occurs in them. The index costs the
+  # length of the text to build, and the number of its lines again for each distinct
+  # number of lines among the snippets it is asked for; after that, each snippet costs
+  # its own length, however many snippets and matches the file has.
+  #
+  # === Examples
+  #
+  #   index = Alibi::SnippetIndex.new("a\n  b\na\nb\n")
+  #   index.places(["a", "b"])
+  #   # => [1, 3]
+  #   index.places(["b", "c"])
+  #   # => []
+  class SnippetIndex
+    @numbers: Hash[String, Integer]
+    @lines: Array[Integer]
+    @hashes: RollingHash
+    @runs: Hash[Integer, Hash[Integer, Array[Integer]]]
+
+    # The index of the lines of +text+, which ends each line with `\n`. A text that ends
+    # with a line break has no empty line after it.
+    def initialize: (String text) -> void
+
+    # The numbers of the first lines, counting from 1, of the first two places where
+    # +lines+ occur in a row, in order: empty when they occur nowhere, as an empty
+    # +lines+ does. Each of +lines+ is compared whole, without leading whitespace, so
+    # give them without it.
+    def places: (Array[String] lines) -> Array[Integer]
+
+    private def starts: (Array[Integer] numbers) -> Array[Integer]
+
+    private def runs: (Integer size) -> Hash[Integer, Array[Integer]]
+  end
+end

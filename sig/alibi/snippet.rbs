@@ -1,0 +1,36 @@
+module Alibi
+  # An alibi's snippet: lines copied from a file, which identify one match by the text
+  # around it. Alibi compares the snippet with the file line by line, ignoring the leading
+  # whitespace of each line on both sides, so reindenting the code doesn't make an alibi
+  # stale.
+  #
+  # === Examples
+  #
+  #   index = Alibi::SnippetIndex.new("def a\n  x = 1 # TODO\nend\n")
+  #   Alibi::Snippet.new("x = 1 # TODO\nend").places_in(index)
+  #   # => [2..3]
+  #   Alibi::Snippet.new("  x = 1 # TODO").to_s
+  #   # => "\"x = 1 # TODO\""
+  class Snippet
+    @lines: Array[String]
+
+    # The snippet whose lines are those of +text+, each without its leading whitespace,
+    # and without a line break at the end of +text+. A CRLF line break counts as LF.
+    #
+    # Raises Error when +text+ has no line, as an empty string has none.
+    def initialize: (String text) -> void
+
+    # The lines the snippet covers in the file that +index+ holds, as ranges of line
+    # numbers counting from 1: none when it occurs nowhere, one when it occurs once, and
+    # the first two in order when it occurs more than once. Two places may overlap, as
+    # `a`, `a` does twice in three lines of `a`.
+    #
+    # Costs the snippet's length, not the file's, once +index+ has seen a snippet with as
+    # many lines.
+    def places_in: (SnippetIndex index) -> Array[Range[Integer]]
+
+    # The snippet's first line, without its leading whitespace, in double quotes, as a
+    # report names the alibi it belongs to.
+    def to_s: () -> String
+  end
+end
