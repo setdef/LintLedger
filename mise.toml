@@ -1,0 +1,78 @@
+# The tools a contributor and CI need, pinned. Run each command through
+# mise, as `mise x -- bundle exec rake`, and mise installs what this file
+# pins first.
+
+# The oldest mise known to read this file.
+min_version = "2026.10.11"
+
+# Alibi runs on the Ruby that Fledge's runtimes carry, 4.1.0-preview1.
+# mise finds a precompiled Ruby among jdx/ruby's releases, but not among
+# the ones GitHub marks as prereleases, as jdx/ruby marks 4.1.0-preview1,
+# so precompiled_url holds the URL of jdx/ruby's asset for each version
+# and platform. ruby.compile = false makes an install fail when that download
+# does, where mise would otherwise compile Ruby from source against
+# whatever libraries the computer has.
+[settings]
+ruby.precompiled_url = "https://github.com/jdx/ruby/releases/download/{version}/ruby-{version}.{platform}.tar.gz"
+ruby.compile = false
+
+[tools]
+# On Windows, mise's ruby installs RubyInstaller's build of a version,
+# and RubyInstaller builds no preview, so the tables at the end of this
+# file install the Ruby that Fledge's Windows runtimes carry instead.
+ruby = { version = "4.1.0-preview1", os = ["linux", "macos"] }
+# The REUSE tool checks every file's copyright and license (rake reuse:lint),
+# installed with uv, on Python 3.12, since reuse needs 3.10 or later and
+# macOS has 3.9. charset-normalizer, pure Python, detects file encodings
+# without libmagic, which python-magic needs.
+python = "3.12"
+uv = "0.13.4"
+"pipx:reuse" = { version = "6.3.0", extras = "charset-normalizer" }
+# actionlint lints the workflows in .github/workflows. shellcheck is the
+# shell linter actionlint runs on each workflow's run steps when it finds it.
+actionlint = "1.7.12"
+shellcheck = "0.11.0"
+
+# On Windows, RubyInstaller's build of Ruby's development branch that
+# Fledge's x64 Windows runtime is built from, by the URL and SHA-256 that
+# Fledge's runtime/sources.yml pins. mise's http backend refuses a
+# download whose SHA-256 differs, unpacks the 7-Zip archive, and puts its
+# bin/ on PATH.
+[tools."http:rubyinstaller-head"]
+version = "20261110"
+os = ["windows"]
+platforms.windows-x64 = { url = "https://github.com/setdef/Fledge/releases/download/inputs-rubyinstaller-head-20261110/rubyinstaller-head-x64.7z", checksum = "sha256:901473edafd6b174d79978fc109d3df3ab73b1436719233f35c1a31b5b18bf58" }
+
+# That build's zlib.so imports libz-1.dll and its digest/blake3.so
+# imports libgcc_s_seh-1.dll, neither of which the build ships, so Ruby's
+# zlib, and with it Bundler, would not load. These are MSYS2's packages
+# of the two DLLs, by the URLs and SHA-256s Fledge pins, and
+# RUBY_DLL_PATH, below, lists their folders.
+[tools."http:msys2-zlib"]
+version = "1.4-2"
+os = ["windows"]
+platforms.windows-x64 = { url = "https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-zlib-1.4-2-any.pkg.tar.zst", checksum = "sha256:172541cf5e2391a402f092104988699b0163129d22be1d6b4b201bfb84af6fcf", bin_path = "ucrt64/bin" }
+
+[tools."http:msys2-libgcc"]
+version = "16.2.0-6"
+os = ["windows"]
+platforms.windows-x64 = { url = "https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-libgcc-16.2.0-6-any.pkg.tar.zst", checksum = "sha256:80b2497f019977dd9528b1abc8621b1328a0115ab1f724047ccbb56bf323f11d", bin_path = "ucrt64/bin" }
+
+# MSYS2 with its UCRT64 compiler, which compiles the gems with C
+# extensions (bigdecimal, racc, and others) for RubyInstaller's Ruby: the
+# build ruby/setup-msys2-gcc made on 2026-11-12, by the SHA-256 GitHub
+# records for it. MSYS2_PATH points RubyInstaller at it, and its
+# compiler's folder is on PATH.
+[tools."http:msys2"]
+version = "20261112.002116"
+os = ["windows"]
+platforms.windows-x64 = { url = "https://github.com/ruby/setup-msys2-gcc/releases/download/v20261112.002116/msys2-ucrt64.7z", checksum = "sha256:2b1b2508f754bfed6e343b7a1f8211646c8df3bb7fb9cb5a42592929f11f1499", bin_path = "ucrt64/bin" }
+
+# On Windows, what `ridk enable` sets besides PATH, so that Bundler
+# compiles gems as it would for a RubyInstaller user. Elsewhere these are
+# empty, and only RubyInstaller reads them.
+[env]
+_.file = { path = ".config/mise/{{ os() }}.env", tools = true }
+MSYS2_PATH = { value = '{% if os() == "windows" %}{{ tools["http:msys2"].path }}{% endif %}', tools = true }
+RI_DEVKIT = { value = '{% if os() == "windows" %}{{ tools["http:msys2"].path }}{% endif %}', tools = true }
+RUBY_DLL_PATH = { value = '{% if os() == "windows" %}{{ tools["http:msys2-zlib"].path }}/ucrt64/bin;{{ tools["http:msys2-libgcc"].path }}/ucrt64/bin{% endif %}', tools = true }
