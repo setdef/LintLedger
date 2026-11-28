@@ -11,7 +11,7 @@ module Alibi
     end
 
     def names
-      names = Dir.glob("*.kdl", base: File.join(@folder, PATH)).sort
+      names = Dir.glob("*.kdl", base: File.join(@folder, PATH))
       raise(Error, "no alibi files in #{PATH}/: add one there, or name one on the command line") if names.empty?
 
       names.map { |name| "#{PATH}/#{name}" }
