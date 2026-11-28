@@ -21,6 +21,7 @@ AllCops:
   NewCops: enable
   TargetRubyVersion: "4.1"
   Exclude:
+    - "build/dist/**/*"
     - "coverage/**/*"
     - "tmp/**/*"
     - "vendor/**/*"

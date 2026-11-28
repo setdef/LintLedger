@@ -1,0 +1,8 @@
+# frozen_string_literal: true
+
+# Fledge, in a bundle of its own, so that the app it builds from the project's
+# Gemfile doesn't carry it (rake build).
+source "https://rubygems.org"
+
+# Builds the app for the computer it runs on.
+gem "fledge", git: "https://github.com/setdef/Fledge", tag: "v0.17.0"

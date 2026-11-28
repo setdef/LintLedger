@@ -1,0 +1,13 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/setdef/Fledge/v0.17.0/lib/fledge/config.schema.json
+
+# What Fledge builds (rake build): a folder named alibi, whose one program,
+# alibi, runs in a terminal. Its version is the gemspec's, which is
+# lib/alibi/version.rb's.
+name: alibi
+publisher: setdef
+description: Checks files in any language against an alibi file that records each suppression and its reason
+homepage: https://github.com/setdef/Alibi
+programs:
+  - path: exe/alibi
+    name: alibi
+    kind: console

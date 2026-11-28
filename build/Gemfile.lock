@@ -1,0 +1,29 @@
+GIT
+  remote: https://github.com/setdef/Fledge
+  revision: 3986dc068adeb84a8bd563664438e3b7c3fac5a4
+  tag: v0.17.0
+  specs:
+    fledge (0.17.0)
+
+GEM
+  remote: https://rubygems.org/
+  specs:
+
+PLATFORMS
+  aarch64-linux
+  aarch64-linux-musl
+  aarch64-mingw-ucrt
+  arm64-darwin
+  x64-mingw-ucrt
+  x86_64-linux
+  x86_64-linux-musl
+
+DEPENDENCIES
+  fledge!
+
+CHECKSUMS
+  bundler (4.1.0.beta2) sha256=ffd80c244e3c080cbc403b194e7b386668c69275561f81b7a801f08772a6e2d6
+  fledge (0.17.0)
+
+BUNDLED WITH
+  4.1.0.beta2
