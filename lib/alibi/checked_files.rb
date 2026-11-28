@@ -9,7 +9,7 @@ module Alibi
     end
 
     def at(path)
-      # A file's index is built once, and only when an alibi names the file. A
+      # A file's index is built once, and only when an alibi is for the file. A
       # path the glob doesn't match is an empty file, where nothing occurs.
       @checked[path] ||= begin
         file = @files.fetch(path) { ProjectFile.new(path, "") }

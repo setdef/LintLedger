@@ -3,7 +3,7 @@ module Alibi
   # Snippet#places_in finds where a run of lines occurs in them. The index costs the
   # length of the text to build, and the number of its lines again for each distinct
   # number of lines among the snippets it is asked for; after that, each snippet costs
-  # its own length, however many snippets and matches the file has.
+  # the snippet's length, however many snippets and matches the file has.
   #
   # === Examples
   #

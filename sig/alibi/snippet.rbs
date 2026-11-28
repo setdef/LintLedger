@@ -30,7 +30,7 @@ module Alibi
     def places_in: (SnippetIndex index) -> Array[Range[Integer]]
 
     # The snippet's first line, without its leading whitespace, in double quotes, as a
-    # report names the alibi it belongs to.
+    # report shows it in a line about the snippet's alibi.
     def to_s: () -> String
   end
 end

@@ -46,7 +46,7 @@ module Alibi
     # for each match without exactly one alibi, and each alibi without exactly one
     # match; Alibi::AlibiFile::Alibi says when an alibi excuses one.
     #
-    # Builds the index of a file's lines once, and only for a file an alibi names, so a
+    # Builds the index of a file's lines once, and only for a file that some alibi is for, so a
     # check costs the length of the files plus the length of the alibis' snippets, not
     # the alibis times the files.
     #
@@ -101,7 +101,7 @@ module Alibi
       # match, since its snippet holds none: ...`.
       def claim: (CheckedFiles files, Excuses excuses) -> Excuses
 
-      # The alibi as a report names it: `the alibi for` and the first line of its
+      # The alibi as a report shows it: `the alibi for` and the first line of its
       # snippet, quoted, as `the alibi for "x # TODO"`.
       def to_s: () -> String
 

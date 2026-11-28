@@ -28,7 +28,7 @@ module Alibi
 
     private def runs(size)
       # Each size of snippet hashes every run of that many lines once, so a snippet
-      # costs its own length to find, not the file's.
+      # costs the snippet's length to find, not the file's.
       @runs[size] ||= (0..(@lines.size - size)).group_by { |start| @hashes.of(start, size) }
     end
   end

@@ -1,7 +1,7 @@
 module Alibi
   # The files the glob matched, by their paths, as alibis look for their matches in them.
   # Each file's lines are indexed the first time an alibi asks for the file, and only
-  # then, so a file no alibi names costs nothing more than its matches did.
+  # then, so a file that no alibi is for costs nothing more than its matches did.
   #
   # === Examples
   #
