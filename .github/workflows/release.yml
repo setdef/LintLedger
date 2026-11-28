@@ -43,7 +43,12 @@ jobs:
       attestations: write
       contents: write
       id-token: write
-    # One release at a time in the repository.
+    # One release at a time in the repository. The group has no `queue: max`,
+    # which GitHub supports and actionlint rejects (setdef/Cutter#24, and
+    # rhysd/actionlint#746). Without it, GitHub keeps one release running and
+    # one pending, and a third tag's release cancels the pending one, so
+    # that tag's release has to be rerun from its run once the running
+    # release finishes.
     concurrency:
       group: alibi-release
       cancel-in-progress: false
