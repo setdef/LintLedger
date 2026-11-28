@@ -36,6 +36,14 @@ class ProjectTest < Minitest::Test
     )
   end
 
+  def test_a_root_that_git_can_not_list_is_an_error_instead_of_a_project_with_no_files
+    root = File.join(ROOT, "gone")
+
+    error = assert_raises(Alibi::Error) { Alibi::Project.new(root).paths }
+
+    assert_match(/\Agit couldn't list the files of #{Regexp.escape(root)}: .*gone/, error.message)
+  end
+
   def test_reads_a_file_by_its_path_from_the_root
     file = Alibi::Project.containing(File.join(ROOT, "docs")).file("lib/untracked.rb")
 

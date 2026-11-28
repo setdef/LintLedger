@@ -98,7 +98,7 @@ An alibi file is [KDL 2](https://kdl.dev/) with exactly two nodes, each with one
 
 Comments start with `//`. A raw string such as `#"\s*"#` takes no escapes, so a pattern can be written as Ruby would read it. Anything else in the file, such as another node, a second `files` node, an argument that isn't a string, a property, a child node, or a type annotation, is an error. So is an `alibi` node, until a later version reads alibis.
 
-**The glob** starts from the project root: the top of the git working tree that holds the alibi file, wherever the alibi file sits in it. `*` matches any part of a name, `**/` matches any number of folders, and braces list alternatives, as in `{lib,test}/**/*.rb`. A `*` also matches a name that starts with a dot. Write `/` between folders on every system. A glob that is absolute, such as `/etc/*` or `C:/src/*`, or that has a `..` segment, is an error.
+**The glob** starts from the project root: the top of the git working tree that holds the alibi file, wherever the alibi file sits in it. `*` matches any part of a name, `**/` matches any number of folders, and braces list alternatives, as in `{lib,test}/**/*.rb`. A `*` also matches a name that starts with a dot. Write `/` between folders on every system. A glob that is absolute, such as `/etc/*` or `C:/src/*`, or that has a `..` segment or a null character, is an error.
 
 Alibi matches the glob against the files git tracks and the files git would track: untracked files that no `.gitignore` lists. A new file counts before anyone stages it, and ignored build output never does. Alibi never follows a symlink, and skips a tracked file that has been deleted. A glob that matches no file is an error, since an alibi file that checks nothing most likely has a mistyped glob.
 

@@ -24,7 +24,10 @@ module Alibi
     def paths
       # Untracked files count, so a new file is checked before anyone stages
       # it, and ignored ones don't, so build output is never read.
-      listing, _status = Open3.capture2("git", "-C", @root, *LIST)
+      listing, errors, status = Open3.capture3("git", "-C", @root, *LIST)
+      # A listing that failed is no listing: a check that read no files would pass.
+      raise(Error, "git couldn't list the files of #{@root}: #{errors.chomp}") unless status.success?
+
       listing.split("\0").uniq.select { |path| regular?(path) }
     end
 

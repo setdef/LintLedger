@@ -24,7 +24,8 @@ module Alibi
     #
     # Raises Error when +text+ is absolute (it starts with `/`, `\`, `~`, or a drive
     # such as `C:`) or has a `..` segment, on every system, since a glob reaches only
-    # the files inside the project root.
+    # the files inside the project root, and when +text+ has a null character, which no
+    # path holds.
     def initialize: (String text) -> void
 
     # The +paths+ the glob matches, in their order.
@@ -33,6 +34,6 @@ module Alibi
     # The glob as the alibi file has it.
     def to_s: () -> String
 
-    private def outside_root: () -> String?
+    private def refusal: () -> String?
   end
 end

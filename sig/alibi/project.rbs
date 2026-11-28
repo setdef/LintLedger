@@ -34,6 +34,8 @@ module Alibi
 
     # The paths of the project's files, from its root, with `/` between folders, in the
     # order git lists them.
+    #
+    # Raises Error when git can't list the files, as it can't when the root is gone.
     def paths: () -> Array[String]
 
     # The file at +path+, from the root, one of #paths.

@@ -38,6 +38,12 @@ class GlobTest < Minitest::Test
     end
   end
 
+  def test_a_glob_with_a_null_character_is_an_error
+    error = assert_raises(Alibi::Error) { Alibi::Glob.new("lib/a\0b") }
+
+    assert_equal("the glob \"lib/a\\u0000b\" has a null character: remove it", error.message)
+  end
+
   def test_two_dots_inside_a_name_are_allowed
     assert_equal(["docs/a..b/x.md"], select("docs/a..b/*.md", "docs/a..b/x.md"))
   end
