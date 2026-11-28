@@ -8,12 +8,9 @@ Several projects each grew an earlier version of this idea. Alibi is one tool, g
 
 ## Settled
 
-- **It checks files in any language.** It is not tied to one language or one linter.
-- **It is written in Ruby.**
 - **Anyone can install it without Ruby:** it is built with [Fledge](https://github.com/setdef/Fledge) and installed through [mise](https://mise.jdx.dev/).
 - **A ledger is an internal Ruby DSL,** evaluated as Ruby. People review ledgers, and that review is what guards them.
 - **Platforms are Fledge's.**
-- **Quality bar:** this project holds itself to the tools and settings that [ruby_quality](https://github.com/Kerrick/ruby_quality) uses to enforce quality, whether or not it uses that repository to get them. It checks its suppressions with itself.
 - **Moving the earlier versions over to Alibi is not part of this project.**
 - **Releases happen on GitHub, freely:** tags and GitHub releases are cut whenever the trunk is ready. Versions are `0.X.Y` only, three plain integers: no prerelease form (no `-rc.1`, no `.pre.`), and no `1.0.0` or higher until the maintainer says so. Nothing goes to a registry outside GitHub (RubyGems, mise's registry, or any other) until the maintainer approves it.
 

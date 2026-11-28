@@ -14,7 +14,7 @@ A check that anyone can switch off without anyone noticing is a check nobody can
 
 ## What the project is
 
-Alibi is a command-line tool that checks the suppressions in a project, in any language, against a ledger: an entry for each one, with its reason, written in Ruby for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
+Alibi is a command-line tool written in Ruby that checks the suppressions in a project, in any language, against a ledger: an entry for each one, with its reason, written in Ruby for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
 
 Write the project's name as Alibi; the command is `alibi`, the Ruby module `Alibi`, and the gem and its files `alibi`.
 
@@ -101,7 +101,7 @@ Alibi runs a project's ledgers and plugins as Ruby, with the user's rights, and 
 
 ## Quality gates
 
-`bundle exec rake` runs the quality gates: a frozen `bundle install`, the tests, RuboCop, Steep, RubyCritic, test coverage, RDoc coverage, `docs:placement` (which fails on a doc comment in a `.rb` file), `reuse lint`, and Alibi on the project's suppressions. Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through.
+`bundle exec rake` runs the quality gates: a frozen `bundle install`, the tests, RuboCop, Steep, RubyCritic, test coverage, RDoc coverage, `docs:placement` (which fails on a doc comment in a `.rb` file), `reuse lint`, and Alibi on the project's suppressions. Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through. The bar is the tools and settings that [ruby_quality](https://github.com/Kerrick/ruby_quality) uses to enforce quality, whether or not the project uses that repository to get them.
 
 Coverage is 100% for each file, on every system CI tests. A test skipped on one system can drop that system's branch coverage below 100% and turn its job red, even though every test passes. Never skip a test on one system to make it pass. Pass the system-dependent value in, such as a path separator or a platform flag, so the test runs everywhere.
 
