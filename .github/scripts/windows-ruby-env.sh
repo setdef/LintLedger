@@ -8,7 +8,7 @@
 #   C:\Users\RUNNER~1\..., which some gems' builds can't use.
 # - MSYS2's usr/bin, behind its compiler's folder, and LANG from MSYS2's
 #   locale, as `ridk enable` sets them; mise.toml and
-#   .config/mise/windows.env set the rest. MSYS2's locale doesn't start
+#   .config/mise/windows-ARCH.env set the rest. MSYS2's locale doesn't start
 #   under another MSYS2's bash (it exits 127 with no message), so LANG is
 #   then C.
 
@@ -18,7 +18,7 @@ set -eu
 msys2=$(cygpath -u "$MSYS2_PATH")
 locale=$("$msys2/usr/bin/locale" -uU || true)
 case "$locale" in *UTF-8*) ;; *) locale=C ;; esac
-mingw=$(cygpath -w "$msys2/${MSYSTEM_PREFIX:?.config/mise/windows.env sets no MSYSTEM_PREFIX}/bin")
+mingw=$(cygpath -w "$msys2/${MSYSTEM_PREFIX:?.config/mise/windows-ARCH.env sets no MSYSTEM_PREFIX}/bin")
 
 {
   echo "TMPDIR=$RUNNER_TEMP"

@@ -42,6 +42,7 @@ shellcheck = "0.11.0"
 version = "20261110"
 os = ["windows"]
 platforms.windows-x64 = { url = "https://github.com/setdef/Fledge/releases/download/inputs-rubyinstaller-head-20261110/rubyinstaller-head-x64.7z", checksum = "sha256:901473edafd6b174d79978fc109d3df3ab73b1436719233f35c1a31b5b18bf58" }
+platforms.windows-arm64 = { url = "https://github.com/setdef/Fledge/releases/download/inputs-rubyinstaller-head-20261110/rubyinstaller-head-arm.7z", checksum = "sha256:7d1ae764cc530ded0ae7f0c6e610eea17c7ef4ce574e529963072674dc234b34" }
 
 # That build's zlib.so imports libz-1.dll and its digest/blake3.so
 # imports libgcc_s_seh-1.dll, neither of which the build ships, so Ruby's
@@ -52,10 +53,12 @@ platforms.windows-x64 = { url = "https://github.com/setdef/Fledge/releases/downl
 version = "1.4-2"
 os = ["windows"]
 platforms.windows-x64 = { url = "https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-zlib-1.4-2-any.pkg.tar.zst", checksum = "sha256:172541cf5e2391a402f092104988699b0163129d22be1d6b4b201bfb84af6fcf", bin_path = "ucrt64/bin" }
+platforms.windows-arm64 = { url = "https://repo.msys2.org/mingw/clangarm64/mingw-w64-clang-aarch64-zlib-1.4-2-any.pkg.tar.zst", checksum = "sha256:ff28742649461c300f8817cc106252ad817aab9611f391c8112ba73f30dafa70", bin_path = "clangarm64/bin" }
 
+# Only the x64 build's digest/blake3.so imports libgcc_s_seh-1.dll.
 [tools."http:msys2-libgcc"]
 version = "16.2.0-6"
-os = ["windows"]
+os = ["windows/x64"]
 platforms.windows-x64 = { url = "https://repo.msys2.org/mingw/ucrt64/mingw-w64-ucrt-x86_64-libgcc-16.2.0-6-any.pkg.tar.zst", checksum = "sha256:80b2497f019977dd9528b1abc8621b1328a0115ab1f724047ccbb56bf323f11d", bin_path = "ucrt64/bin" }
 
 # MSYS2 with its UCRT64 compiler, which compiles the gems with C
@@ -67,12 +70,15 @@ platforms.windows-x64 = { url = "https://repo.msys2.org/mingw/ucrt64/mingw-w64-u
 version = "20261112.002116"
 os = ["windows"]
 platforms.windows-x64 = { url = "https://github.com/ruby/setup-msys2-gcc/releases/download/v20261112.002116/msys2-ucrt64.7z", checksum = "sha256:2b1b2508f754bfed6e343b7a1f8211646c8df3bb7fb9cb5a42592929f11f1499", bin_path = "ucrt64/bin" }
+platforms.windows-arm64 = { url = "https://github.com/ruby/setup-msys2-gcc/releases/download/v20261112.002116/msys2-clangarm64.7z", checksum = "sha256:8c95e197ce13c53c48a0a3b13c0e73bdd7e7989579e2231b400dd19b559d74e7", bin_path = "clangarm64/bin" }
 
 # On Windows, what `ridk enable` sets besides PATH, so that Bundler
-# compiles gems as it would for a RubyInstaller user. Elsewhere these are
-# empty, and only RubyInstaller reads them.
+# compiles gems as it would for a RubyInstaller user, from
+# .config/mise/windows-x64.env or windows-arm64.env. Elsewhere mise reads
+# no file, and these three variables are empty, and only RubyInstaller
+# reads them.
 [env]
-_.file = { path = ".config/mise/{{ os() }}.env", tools = true }
+_.file = { path = ".config/mise/{{ os() }}-{{ arch() }}.env", tools = true }
 MSYS2_PATH = { value = '{% if os() == "windows" %}{{ tools["http:msys2"].path }}{% endif %}', tools = true }
 RI_DEVKIT = { value = '{% if os() == "windows" %}{{ tools["http:msys2"].path }}{% endif %}', tools = true }
-RUBY_DLL_PATH = { value = '{% if os() == "windows" %}{{ tools["http:msys2-zlib"].path }}/ucrt64/bin;{{ tools["http:msys2-libgcc"].path }}/ucrt64/bin{% endif %}', tools = true }
+RUBY_DLL_PATH = { value = '{% if os() == "windows" %}{{ tools["http:msys2-zlib"].path }}/{{ arch(x64="ucrt64", arm64="clangarm64") }}/bin{% if arch() == "x64" %};{{ tools["http:msys2-libgcc"].path }}/ucrt64/bin{% endif %}{% endif %}', tools = true }
