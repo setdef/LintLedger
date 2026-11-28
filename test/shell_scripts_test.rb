@@ -48,6 +48,10 @@ class ShellScriptsTest < Minitest::Test
     assert_empty(picked(OTHERS))
   end
 
+  def test_a_binary_file_is_not_a_script
+    assert_empty(picked([["archive.tar.gz", "\x1F\x8B\xFF\xFE\n".b]]))
+  end
+
   def test_a_folder_is_not_a_script
     Dir.mktmpdir { |dir| assert_empty(ShellScripts.among([dir])) }
   end

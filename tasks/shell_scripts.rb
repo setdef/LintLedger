@@ -13,8 +13,9 @@ class ShellScripts
     paths.select { |path| File.file?(path) && script?(path) }
   end
 
-  # Whether the file at +path+ is a shell script, by its extension or its first line.
+  # Whether the file at +path+ is a shell script, by its extension or its first line. The first line is read as bytes,
+  # so a binary file, such as an archive, is no shell script and no error.
   def self.script?(path)
-    File.extname(path) == ".sh" || File.open(path, &:gets).to_s.match?(SHEBANG)
+    File.extname(path) == ".sh" || File.open(path, "rb", &:gets).to_s.match?(SHEBANG)
   end
 end
