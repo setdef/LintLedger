@@ -1,8 +1,8 @@
 # frozen_string_literal: true
 
-require "test_helper"
 require "open3"
 require "rbconfig"
+require "test_helper"
 
 class ExecutableTest < Minitest::Test
   EXECUTABLE = File.expand_path("../exe/alibi", __dir__)
@@ -25,9 +25,7 @@ class ExecutableTest < Minitest::Test
     assert_equal(2, status.exitstatus)
   end
 
-  private
-
-  def alibi(*arguments)
-    Open3.capture3(RbConfig.ruby, "-I#{LIB}", EXECUTABLE, *arguments)
+  private def alibi(*)
+    Open3.capture3(RbConfig.ruby, "-I#{LIB}", EXECUTABLE, *)
   end
 end

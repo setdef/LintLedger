@@ -1,7 +1,7 @@
 # frozen_string_literal: true
 
-require "test_helper"
 require "stringio"
+require "test_helper"
 
 class CommandLineTest < Minitest::Test
   def setup
@@ -19,6 +19,16 @@ class CommandLineTest < Minitest::Test
     assert_equal(0, run_with("--help"))
     assert_equal("Usage: alibi [--version] [--help]\n", @out.string)
     assert_empty(@err.string)
+  end
+
+  def test_both_options_print_the_version_before_the_usage_line_whatever_their_order
+    assert_equal(0, run_with("--help", "--version"))
+    assert_equal("#{Alibi::VERSION}\nUsage: alibi [--version] [--help]\n", @out.string)
+  end
+
+  def test_an_abbreviated_option_is_an_error
+    assert_equal(2, run_with("--vers"))
+    assert_equal("alibi: invalid option: --vers\n", @err.string)
   end
 
   def test_no_arguments_is_an_error
@@ -39,9 +49,7 @@ class CommandLineTest < Minitest::Test
     assert_empty(@out.string)
   end
 
-  private
-
-  def run_with(*arguments)
+  private def run_with(*arguments)
     Alibi::CommandLine.new(out: @out, err: @err).run(arguments)
   end
 end

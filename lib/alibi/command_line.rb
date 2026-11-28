@@ -1,13 +1,10 @@
 # frozen_string_literal: true
 
-require "optparse"
-
 module Alibi
   class CommandLine
     PASSED = 0
     ERRORED = 2
-    USAGE = "Usage: alibi [--version] [--help]"
-    private_constant(:PASSED, :ERRORED, :USAGE)
+    private_constant(:PASSED, :ERRORED)
 
     def initialize(out:, err:)
       @out = out
@@ -15,22 +12,10 @@ module Alibi
     end
 
     def run(arguments)
-      answers = []
-      parser = OptionParser.new
-      parser.on("--version") { answers << VERSION }
-      parser.on("--help") { answers << USAGE }
-      return fail_with("expected --version or --help") unless parser.parse(arguments).empty? && !answers.empty?
-
-      @out.puts(answers)
+      @out.puts(Request.new(arguments).answers)
       PASSED
-    rescue OptionParser::ParseError => error
-      fail_with(error.message)
-    end
-
-    private
-
-    def fail_with(message)
-      @err.puts("alibi: #{message}")
+    rescue UsageError => e
+      @err.puts("alibi: #{e.message}")
       ERRORED
     end
   end
