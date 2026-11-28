@@ -62,6 +62,12 @@ For example: `feat(cli): report each suppression the ledger lacks`, or `docs: de
 
 ## Writing things down
 
+### Glossary
+
+Use [the glossary](docs/glossary.md)'s words, in code as in prose; a new idea gets a glossary entry before it gets a name.
+
+### When and where
+
 | Axis | As it is | As it will be |
 | - | - | - |
 | Requirements: what the software does for its users | User documentation† | Issues |
