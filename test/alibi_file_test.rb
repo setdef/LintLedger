@@ -112,6 +112,12 @@ class AlibiFileTest < Minitest::Test
     assert_error("give the `files` node one string argument and nothing else", %((glob)files "a"\npattern "x"\n))
   end
 
+  def test_a_type_annotation_on_a_value_is_an_error_even_when_the_kdl_gem_could_not_convert_it
+    ['(regex)"["', '(date)"nope"', '(base64)"!!"', '(uuid)"x"', '(u8)"5"'].each do |value|
+      assert_error("give the `files` node one string argument and nothing else", %(files #{value}\npattern "x"\n))
+    end
+  end
+
   def test_a_glob_or_pattern_error_comes_through
     assert_raises(Alibi::Error) { Alibi::AlibiFile.parse(%(files "/etc/*"\npattern "x"\n)) }
     assert_raises(Alibi::Error) { Alibi::AlibiFile.parse(%(files "*"\npattern "(a)\\\\1"\n)) }
