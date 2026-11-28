@@ -1,5 +1,8 @@
 # frozen_string_literal: true
 
+# A warning about the project's own code raises, so a run with one fails.
+require_relative("project_warnings")
+
 # SimpleCov starts before anything from lib loads, so it sees every line.
 require "simplecov"
 
