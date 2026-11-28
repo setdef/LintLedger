@@ -39,6 +39,12 @@ Layout/CommentIndentation:
 Layout/EmptyLineBetweenDefs:
   AllowAdjacentOneLineDefs: true
 
+Layout/EndOfLine:
+  # The baseline says native, which fails on a system whose checkout isn't
+  # CRLF when the checked system is Windows. .gitattributes makes every
+  # checkout LF, so the style is lf.
+  EnforcedStyle: lf
+
 Layout/EndAlignment:
   EnforcedStyleAlignWith: start_of_line
 
