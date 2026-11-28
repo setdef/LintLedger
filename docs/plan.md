@@ -2,7 +2,7 @@
 
 This file is a seed, and it is meant to disappear. It holds what was settled before the first commit. The work itself is in this repository's issues. As each line below gets its lasting home, delete it here. When nothing is left, delete the file: #3 tracks that.
 
-Alibi keeps a project's suppressions in alibi files that people review. Without one, suppressions of ESLint, Clippy, RuboCop and similar checks pile up wherever an agent finds a check inconvenient, and the project's checks mean less each time. With alibi files, adding a suppression costs enough to deter it, and every suppression is in an alibi file where a reviewer can't miss it.
+With Alibi, a project keeps its suppressions in alibi files that people review. Without one, suppressions of ESLint, Clippy, RuboCop and similar checks pile up wherever an agent finds a check inconvenient, and the project's checks mean less each time. With alibi files, adding a suppression costs enough to deter it, and every suppression is in an alibi file where a reviewer can't miss it.
 
 Several projects each grew an earlier version of this idea. Alibi is one tool, good enough to replace every one of them.
 
