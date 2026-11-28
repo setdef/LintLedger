@@ -1,0 +1,20 @@
+module Alibi
+  # An alibi file on disk, which Alibi reads before it parses.
+  #
+  # === Examples
+  #
+  #   Alibi::AlibiFileReader.new(".config/alibi/todos-never.kdl").bytes
+  #   # => "files \"**/*.rb\"\npattern \"TODO\"\n"
+  class AlibiFileReader
+    @path: String
+
+    # The alibi file at +path+.
+    def initialize: (String path) -> void
+
+    # The bytes of the file.
+    #
+    # Raises Error, which says why in plain words, such as "no such file or directory" or
+    # "permission denied", when the file can't be read.
+    def bytes: () -> String
+  end
+end

@@ -3,6 +3,7 @@
 require_relative("alibi/alibi_file")
 require_relative("alibi/alibi_file/node")
 require_relative("alibi/alibi_file/parser")
+require_relative("alibi/alibi_file_reader")
 require_relative("alibi/alibi_folder")
 require_relative("alibi/command_line")
 require_relative("alibi/error")

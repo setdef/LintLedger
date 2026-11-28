@@ -42,7 +42,7 @@ module Alibi
 
     private def report_on(name)
       path = File.expand_path(name, @folder)
-      verdict = AlibiFile.parse(File.binread(path)).check(@projects.containing(File.dirname(path)))
+      verdict = AlibiFile.parse(AlibiFileReader.new(path).bytes).check(@projects.containing(File.dirname(path)))
       Report.new(name, verdict).write(@out)
       verdict
     end

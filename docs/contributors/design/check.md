@@ -21,6 +21,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 | `CommandLine` | Turns a command line into alibi files to check, checks each, and picks the exit status. | Reads alibi files; writes to the two streams |
 | `AlibiFolder` | Names the alibi files in a folder's `.config/alibi/`, for a bare `alibi`. | Lists the folder |
 | `Request` | Reads the options and the names of the alibi files from the arguments. | No |
+| `AlibiFileReader` | Reads an alibi file's bytes, and says in plain words why it can't. | Reads the file |
 | `AlibiFile` | Holds a glob and a pattern, and checks a project against them, refusing a project the glob matches no file in. | No |
 | `AlibiFile::Parser`, `AlibiFile::Node` | Turn an alibi file's KDL into an `AlibiFile`, refusing anything else in it. | No |
 | `Glob` | Chooses, among a project's paths, the ones the alibi file applies to. | No |

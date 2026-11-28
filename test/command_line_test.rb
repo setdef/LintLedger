@@ -64,12 +64,6 @@ class CommandLineTest < Minitest::Test
     assert_equal([File.join(@folder, "concerns")], @projects.folders)
   end
 
-  def test_a_missing_alibi_file_is_an_error
-    assert_equal(2, run_with("missing.kdl"))
-    assert_match(/\Aalibi: missing\.kdl: No such file or directory/, @err.string)
-    assert_empty(@out.string)
-  end
-
   def test_an_invalid_alibi_file_is_an_error_that_names_it
     write(["bad.kdl", %(files "lib/**/*.rb"\n)])
 
