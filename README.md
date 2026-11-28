@@ -6,6 +6,8 @@ Every linter, type checker, and compiler lets someone switch a check off at one 
 
 Alibis, which will excuse one match with the reason it is needed, aren't available yet. Until they are, an alibi file passes only while its pattern matches nothing.
 
+Until Alibi 1.0.0, a minor version (0.X.0) may change what an alibi file may hold, and [`CHANGELOG.md`](CHANGELOG.md) says what changed. [Semantic Versioning 2.0.0](https://semver.org/spec/v2.0.0.html) allows this: in a 0.y.z version, "Anything MAY change at any time."
+
 ## A first example
 
 This alibi file, saved as `.config/alibi/rubocop-disable-never.kdl` in a project's git working tree, bans [RuboCop](https://rubocop.org/)'s `disable` and `todo` comments in every Ruby file:
@@ -50,6 +52,8 @@ windows-arm64 = { asset_pattern = "alibi-aarch64-mingw-ucrt.zip" }
 ```
 
 `mise exec -- alibi --version` then prints the installed version. With `strip_components` and `bin_path`, mise puts the `alibi` program on your `PATH` and leaves out the Ruby that comes in the build. Without them, mise puts that Ruby first on your `PATH`, ahead of any Ruby you use.
+
+With mise 2026.10.11 and newer, mise's github backend applies a default `minimum_release_age` of 24 hours when it resolves `latest`, so `version = "latest"` installs the newest release that is at least a day old. To install a release sooner, write that release's number in place of `latest`, as in `version = "X.Y.Z"`: mise doesn't filter an exact version.
 
 On Linux with [musl](https://musl.libc.org/), such as [Alpine](https://alpinelinux.org/), use the musl builds:
 
