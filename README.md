@@ -79,7 +79,7 @@ Alibi runs `git` to find a project's files, so it needs `git` on the `PATH`.
 
 `alibi FILE.kdl` checks one alibi file, and `alibi A.kdl B.kdl` checks each in turn. A bare `alibi` checks every `*.kdl` file directly in `.config/alibi/` of the folder you run it in, in order of name, so a new alibi file there runs without anyone adding it to a command line. Keep one alibi file for each thing you ban, named for what it bans and to what bar, such as `rubocop-disable-never.kdl`.
 
-For each alibi file, Alibi prints one line on standard output that names the alibi file and says whether it passed, and how many files it checked. After a failure, it prints each match as `PATH:LINE: TEXT`, with the path from the project root and the whole line where the match starts. Alibi prints no color. A control character from a file, other than a tab, shows as an escape such as `\x1B`.
+For each alibi file, Alibi prints one line on standard output with the alibi file's name, whether it passed, and how many files it checked. After a failure, it prints each match as `PATH:LINE: TEXT`, with the path from the project root and the whole line where the match starts. Alibi prints no color. A control character from a file, other than a tab, shows as an escape such as `\x1B`.
 
 Errors go to standard error, one line each, starting with `alibi:` and the alibi file's name. After an error in one alibi file, Alibi still checks the rest.
 
@@ -100,9 +100,9 @@ Comments start with `//`. A raw string such as `#"\s*"#` takes no escapes, so a 
 
 **The glob** starts from the project root: the top of the git working tree that holds the alibi file, wherever the alibi file sits in it. `*` matches any part of a name, `**/` matches any number of folders, and braces list alternatives, as in `{lib,test}/**/*.rb`. A `*` also matches a name that starts with a dot. Write `/` between folders on every system. A glob that is absolute, such as `/etc/*` or `C:/src/*`, or that has a `..` segment, is an error.
 
-The glob chooses among the files git tracks and the files git would track: untracked files that no `.gitignore` lists. A new file counts before anyone stages it, and ignored build output never does. Alibi never follows a symlink, and skips a tracked file that has been deleted.
+Alibi matches the glob against the files git tracks and the files git would track: untracked files that no `.gitignore` lists. A new file counts before anyone stages it, and ignored build output never does. Alibi never follows a symlink, and skips a tracked file that has been deleted.
 
-**The pattern** runs over each file's whole text, so it can span lines. A match on several lines is shown at the line where it starts. A pattern has no flags in the alibi file; write them inline, such as `(?i)` to ignore case or `(?m)` to let `.` match a line break.
+**The pattern** is a regular expression that Alibi runs over each file's whole text, so it can span lines. A match on several lines is shown at the line where it starts. A pattern has no flags in the alibi file; write them inline, such as `(?i)` to ignore case or `(?m)` to let `.` match a line break.
 
 Alibi refuses a pattern that Ruby can't match in linear time, so no pattern can hang it. Back-references, captures inside lookarounds, nested quantifiers, the absence operator, and conditionals make a pattern slower than that. Lookahead and lookbehind are allowed. As a backstop, a pattern that runs for more than 2 seconds over one file is an error.
 
