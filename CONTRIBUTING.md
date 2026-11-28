@@ -14,7 +14,7 @@ A check that anyone can switch off without anyone noticing is a check nobody can
 
 ## What the project is
 
-Alibi is a command-line tool written in Ruby that checks the suppressions in a project, in any language, against a ledger: an entry for each one, with its reason, written in Ruby for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
+Alibi is a command-line tool written in Ruby that checks a project's suppressions, in any language, against a ledger. A ledger holds an entry for each suppression, with its reason, in Ruby syntax for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
 
 Write the project's name as Alibi; the command is `alibi`, the Ruby module `Alibi`, and the gem and its files `alibi`.
 
