@@ -1,12 +1,12 @@
 <!-- ONLY HUMANS MAY EDIT THIS FILE! -->
 
-# Working on LintLedger
+# Working on Alibi
 
 These are the working rules for everyone who changes this repository: people, and the AI agents they run. They are the project's shared rules, so they apply to every contributor, humans and AI agents alike.
 
-## The Tao of LintLedger
+## The Tao of Alibi
 
-A check that anyone can switch off without anyone noticing is a check nobody can trust. Every linter, type checker, and compiler lets someone switch a check off anywhere in the code. Each such spot is easy to miss in the change that adds it, and hard to find among the rest of the code afterward. LintLedger puts every one on the record, with its reason, so whoever answers for the code knows every place where a passing check doesn't mean what it says.
+A check that anyone can switch off without anyone noticing is a check nobody can trust. Every linter, type checker, and compiler lets someone switch a check off anywhere in the code. Each such spot is easy to miss in the change that adds it, and hard to find among the rest of the code afterward. Alibi puts every one on the record, with its reason, so whoever answers for the code knows every place where a passing check doesn't mean what it says.
 
 - Fix the code before you write an entry. The best ledger is empty.
 - Write each reason for a reader who wasn't there.
@@ -14,9 +14,9 @@ A check that anyone can switch off without anyone noticing is a check nobody can
 
 ## What the project is
 
-LintLedger is a command-line tool that checks the suppressions in a project, in any language, against a ledger: an entry for each one, with its reason, written in Ruby for people to review. LintLedger has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
+Alibi is a command-line tool that checks the suppressions in a project, in any language, against a ledger: an entry for each one, with its reason, written in Ruby for people to review. Alibi has no built-in knowledge of any linter; plugins supply what each linter's suppressions look like.
 
-Write the project's name as LintLedger; the command is `lint-ledger`, the Ruby module `LintLedger`, and the gem and its files `lint_ledger`.
+Write the project's name as Alibi; the command is `alibi`, the Ruby module `Alibi`, and the gem and its files `alibi`.
 
 ## Committing to the trunk
 
@@ -89,7 +89,7 @@ Use [the glossary](docs/glossary.md)'s words, in code as in prose; a new idea ge
 
 ## Security
 
-LintLedger runs a project's ledgers and plugins as Ruby, with the user's rights, and reads the project's files. Treat every path, file, and line of output it reads as untrusted input.
+Alibi runs a project's ledgers and plugins as Ruby, with the user's rights, and reads the project's files. Treat every path, file, and line of output it reads as untrusted input.
 
 - Start a subprocess with an array of arguments, never a single string a shell would parse.
 - Build file paths from parts with `File.join` or `Pathname`, and check that a path built from outside input stays inside the directory you meant it for.
@@ -101,7 +101,7 @@ LintLedger runs a project's ledgers and plugins as Ruby, with the user's rights,
 
 ## Quality gates
 
-`bundle exec rake` runs the quality gates: a frozen `bundle install`, the tests, RuboCop, Steep, RubyCritic, test coverage, RDoc coverage, `docs:placement` (which fails on a doc comment in a `.rb` file), `reuse lint`, and LintLedger on the project's suppressions. Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through.
+`bundle exec rake` runs the quality gates: a frozen `bundle install`, the tests, RuboCop, Steep, RubyCritic, test coverage, RDoc coverage, `docs:placement` (which fails on a doc comment in a `.rb` file), `reuse lint`, and Alibi on the project's suppressions. Every change has to pass all of them, with zero errors and zero warnings. Their thresholds only ever go up. When a change fails a gate, fix the change; never lower a threshold, turn off a check, or exclude code to get it through.
 
 Coverage is 100% for each file, on every system CI tests. A test skipped on one system can drop that system's branch coverage below 100% and turn its job red, even though every test passes. Never skip a test on one system to make it pass. Pass the system-dependent value in, such as a path separator or a platform flag, so the test runs everywhere.
 
