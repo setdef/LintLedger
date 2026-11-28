@@ -1,0 +1,7 @@
+// Steep checks every call in Alibi, with no exception: fix the code or its
+// signature instead of telling Steep to look away. This bans its ignore
+// comments (steep:ignore, steep:ignore:start, steep:ignore:end) and its
+// @dynamic annotation, which tells Steep a method exists that it can't see,
+// so it stops checking that the method is defined.
+files "{**/*.{rb,rake,gemspec},**/Gemfile,Rakefile,Steepfile,exe/*}"
+pattern #"#\s*(steep:ignore|@dynamic)\b"#

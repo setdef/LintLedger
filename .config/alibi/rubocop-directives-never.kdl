@@ -1,0 +1,7 @@
+// RuboCop's checks hold everywhere in Alibi, with no exception: fix the
+// code instead of switching a cop off. This bans every directive comment
+// RuboCop reads (disable, todo, enable, push, pop, and their -next forms),
+// with any spaces around the colon, as RuboCop allows. Markdown is left out,
+// since its prose and examples name these directives.
+files "{**/*.{rb,rbs,rake,gemspec},**/Gemfile,Rakefile,Steepfile,exe/*}"
+pattern #"#\s*rubocop\s*:"#

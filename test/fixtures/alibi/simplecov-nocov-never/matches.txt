@@ -1,0 +1,4 @@
+# :nocov:
+  # :nocov:
+SimpleCov.nocov_token("skip")
+nocov_token "skip"

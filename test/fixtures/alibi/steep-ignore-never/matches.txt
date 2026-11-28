@@ -1,0 +1,6 @@
+total = lines.sum(&:amount) # steep:ignore
+total = lines.sum(&:amount) # steep:ignore NoMethod
+# steep:ignore:start
+# steep:ignore:end
+#steep:ignore
+# @dynamic path, text

@@ -1,0 +1,4 @@
+def call: (untyped input) -> void
+@cache: Hash[Symbol, untyped]
+type payload = untyped
+def each: () { (untyped) -> void } -> void

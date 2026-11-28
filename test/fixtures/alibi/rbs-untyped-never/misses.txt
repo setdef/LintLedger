@@ -1,0 +1,3 @@
+def call: (String input) -> void
+type json = String | Integer | Array[json] | Hash[String, json]
+def typed?: () -> bool

@@ -1,0 +1,4 @@
+# Steep checks this file.
+sh("bundle", "exec", "steep", "check")
+# @type var total: Integer
+dynamic = true

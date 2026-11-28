@@ -62,7 +62,10 @@ class RubyDocCommentsTest < Minitest::Test
   end
 
   def test_a_directive_above_a_definition_is_clear
-    assert_empty(faults("# frozen_string_literal: true\n# rubocop:disable Style/Foo\ndef b\nend\n"))
+    # The sample is a fixture, since .config/alibi/ bans its directive in Ruby files.
+    sample = File.expand_path("fixtures/ruby_doc_comments/directive_above_definition.txt", __dir__)
+
+    assert_empty(faults(File.read(sample)))
   end
 
   def test_a_comment_at_the_end_of_a_file_is_clear

@@ -1,0 +1,11 @@
+# rubocop:disable Metrics/AbcSize
+total = lines.sum(&:amount) # rubocop:disable Style/SymbolProc
+# rubocop:todo Layout/LineLength
+# rubocop:enable all
+# rubocop:disable-next-line Lint/UselessAssignment
+# rubocop:todo-next-line Lint/UselessAssignment
+# rubocop:enable-next-line Lint/UselessAssignment
+# rubocop:push -Lint/UselessAssignment
+# rubocop:pop
+# rubocop : disable Lint/UselessAssignment
+#rubocop:disable all

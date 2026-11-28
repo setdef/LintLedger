@@ -1,0 +1,6 @@
+// Every value in Alibi's signatures has a type, with no exception: name the
+// type, or write a type alias for it, instead of untyped, which Steep accepts
+// anywhere and checks nowhere. This covers the RBS files under sig/ and
+// tasks/sig/, and the inline annotations a Ruby file can carry.
+files "{**/*.{rbs,rb,rake},Rakefile,Steepfile,exe/*}"
+pattern #"\buntyped\b"#

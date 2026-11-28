@@ -7,5 +7,5 @@ Dir.glob("tasks/**/*.rake").each { |path| import(path) }
 # run at once, each on the cores it needs, and the longest one sets the time.
 desc "Run every check of the gate at once"
 multitask default: %w[
-  bundle:frozen test rubocop rubycritic steep reuse:lint rdoc:coverage docs:placement actionlint shellcheck
+  bundle:frozen test rubocop rubycritic steep reuse:lint rdoc:coverage docs:placement actionlint shellcheck alibi
 ]

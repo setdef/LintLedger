@@ -1,0 +1,6 @@
+// Tests cover every line and branch of Alibi, with no exception: test the
+// code, or delete it, instead of hiding it from SimpleCov. This bans the
+// :nocov: markers around code SimpleCov skips, and nocov_token, which
+// renames them.
+files "{**/*.{rb,rake,gemspec},**/Gemfile,Rakefile,exe/*}"
+pattern #"nocov"#

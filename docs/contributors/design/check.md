@@ -48,6 +48,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 
 ## Traps
 
+- **This project's alibi files contain what they ban,** and so do the samples that test them. `bundle exec rake` runs `exe/alibi` over the alibi files in `.config/alibi/`, whose globs match only Ruby, RBS, and the files Bundler, Rake, and Steep read. The alibi files themselves are KDL, and each sample is a `.txt` file under `test/fixtures/`, so the check never reads them. `test/alibi_files_test.rb` reads the samples for each alibi file: a path its glob has to match, the forms its pattern has to find, and lines it has to leave alone. A new alibi file there needs a folder of samples too, or that test fails. Markdown is left out of the globs, since its prose names the very forms they ban.
 - **A glob that matches nothing passes.** The summary says `no matches in 0 files`, which is how a typo in the glob shows.
 - **A pattern that matches empty text matches everywhere,** such as `a*` or `^`, and fails on every line of every file.
 - **`.` doesn't match a line break** unless the pattern starts with `(?m)`, and `^` and `$` match at every line, as Ruby has them.
