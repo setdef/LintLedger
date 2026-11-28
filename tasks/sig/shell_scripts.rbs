@@ -1,0 +1,7 @@
+class ShellScripts
+  SHEBANG: Regexp
+
+  def self.among: (Array[String] paths) -> Array[String]
+
+  def self.script?: (String path) -> bool
+end
