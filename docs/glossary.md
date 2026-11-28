@@ -7,6 +7,11 @@ The words Alibi's code, documentation, and issues use, with the meaning each has
 | **match** | What an alibi file's pattern finds in the files the alibi file applies to. | hit |
 | **alibi** | One item in an alibi file: a snippet that identifies one match, and the reason that match is necessary at its place. It excuses that match and no other. | entry, approval, exception, allow |
 | **alibi file** | A KDL file, named on the command line, that lists the files it applies to, a pattern, and its alibis. | ledger, exceptions file, allow-list, baseline (a baseline lists existing violations to tolerate, with nothing in the source marking them) |
+| **glob** | An alibi file's `files` value: a pattern of paths, from the project root, that matches the files the alibi file applies to. | file pattern (a pattern is the regexp) |
+| **pattern** | An alibi file's `pattern` value: a Ruby regular expression that Alibi runs over the text of each file the glob matches. It may ban anything, not only a suppression. | rule, ban, regex |
+| **project root** | The top of the git working tree that holds an alibi file. Every path in a glob, and in Alibi's output, starts there. | repository root, base folder |
+| **project file** | A file in the project that git tracks, or would track: tracked, or untracked and not ignored. Alibi reads only project files, and only those the glob matches. | source file (a project file may hold any text) |
+| **verdict** | What Alibi concludes about one alibi file: it passes or it fails. On an error, such as an alibi file that isn't valid, Alibi reaches no verdict on that file. | result, status, outcome |
 | **snippet** | Lines copied from a file, written as a KDL multi-line raw string, that occur exactly once in that file and contain exactly one match of the alibi file's pattern. | excerpt |
 | **reason** | The text in an alibi that says why that match is necessary at its place, written for a reader who wasn't there when it was added. | justification, comment |
 | **check** | One thing a linter, type checker, or compiler verifies about code, such as a Clippy lint, a RuboCop cop, a clang-tidy check, or Steep's type checking of a call. | lint, cop, rule (each is one tool's word) |
