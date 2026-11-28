@@ -7,12 +7,18 @@
 # In order, it checks that the tag is v0.X.Y (three plain integers, never
 # 1.0.0 or above), that the tag is annotated, still points at the commit this
 # run built, and that commit is on trunk, and that every other job of this
-# run succeeded. It then writes SHA256SUMS, signs a build provenance
+# run succeeded, and that CHANGELOG.md at that commit lists something new
+# under Unreleased, the tag is newer than every other v0.X.Y tag, and its
+# version is the one the entries call for: 0.(X+1).0 when an entry is marked
+# **Breaking:** or is under Removed, otherwise 0.X.(Y+1), and 0.1.0 for the
+# first release. It then writes SHA256SUMS, signs a build provenance
 # attestation for each file, and publishes the GitHub release through a
 # draft: the archives, then SHA256SUMS last, then the publishing. The
 # release is created from the existing tag, with no target commit, since
-# GitHub refuses a target when trunk's tip has changed workflow files. It
-# publishes nowhere but GitHub.
+# GitHub refuses a target when trunk's tip has changed workflow files. Last,
+# it dates the release in trunk's changelog, with one commit that moves the
+# entries the tagged commit listed under the release's heading. It publishes
+# nowhere but GitHub, and writes nowhere but trunk's CHANGELOG.md.
 
 name: Release
 
@@ -81,12 +87,36 @@ jobs:
         env:
           OWN_JOB_ID: ${{ job.check_run_id }}
 
+      # The same Ruby the other jobs of this run use, for the changelog's
+      # scripts.
+      - uses: jdx/mise-action@924e7c586e33d7d4bae9c14e26c5d22e2beb6e78 # v5.3.0
+        with:
+          version: 2026.10.11
+          install_args: ruby
+
+      - name: Check the changelog against the tag
+        run: .github/scripts/check-changelog.sh "$GITHUB_REF_NAME"
+
+      # A run that published the release and failed to record it finds the
+      # release published when it runs again. It skips the publishing, which
+      # would refuse, and records the release.
+      - name: Find out whether GitHub has a published release of the tag
+        id: state
+        run: |
+          if [ "$(gh release view "$GITHUB_REF_NAME" --json isDraft --jq .isDraft 2> /dev/null || echo none)" = false ]; then
+            echo "published=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "published=false" >> "$GITHUB_OUTPUT"
+          fi
+
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        if: steps.state.outputs.published != 'true'
         with:
           name: ${{ inputs.artifact }}
           path: files
 
       - name: Write SHA256SUMS
+        if: steps.state.outputs.published != 'true'
         working-directory: files
         run: |
           [ -n "$(ls)" ] || { echo "the artifact holds no file"; exit 1; }
@@ -98,13 +128,23 @@ jobs:
       # attaches, with the workflow's identity, so that `gh attestation
       # verify` can check a download against this repository.
       - uses: actions/attest@1e69f48acb82d1966a394da916b4c1698aa569d6 # v4.2.2
+        if: steps.state.outputs.published != 'true'
         with:
           subject-path: files/*
 
       - name: Write the release notes
+        if: steps.state.outputs.published != 'true'
         run: .github/scripts/release-notes.sh > notes.md
 
       - name: Publish the release through a draft
+        if: steps.state.outputs.published != 'true'
         run: .github/scripts/publish-release.sh "$GITHUB_REF_NAME" "Alibi $VERSION" files notes.md
         env:
           VERSION: ${{ steps.version.outputs.version }}
+
+      # Dates the release in trunk's changelog. The release is public by now,
+      # so a failure here leaves a published release to record: run the job
+      # again. The commit starts no workflow, since GitHub starts none for a
+      # push made with a run's token.
+      - name: Record the release in trunk's changelog
+        run: .github/scripts/record-release.sh "$GITHUB_REF_NAME"
