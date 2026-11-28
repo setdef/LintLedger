@@ -44,6 +44,35 @@ class ProjectTest < Minitest::Test
     \tfsmonitor = echo ran >'#{FSMONITOR_MARKER}'; :
   CONFIG
 
+  # An unresolved merge conflict leaves a path in three stages of the index, and git lists it once for each.
+  CONFLICT_ROOT = File.realpath(Dir.mktmpdir("alibi-conflict-"))
+  private_constant(:CONFLICT_ROOT)
+
+  Minitest.after_run { FileUtils.remove_entry(CONFLICT_ROOT) }
+
+  def self.git(*, **)
+    system("git", "-C", CONFLICT_ROOT, "-c", "user.name=Test", "-c", "user.email=test@example.com", *, **)
+  end
+
+  def self.commit(text)
+    write(CONFLICT_ROOT, [["conflict.txt", text]])
+    git("add", ".", exception: true)
+    git("commit", "--quiet", "-m", "x", exception: true)
+  end
+
+  git("init", "--quiet", exception: true)
+  commit("base\n")
+  git("switch", "--quiet", "--create", "other", exception: true)
+  commit("other\n")
+  git("switch", "--quiet", "-", exception: true)
+  commit("mine\n")
+  # The merge stops on the conflict, which is the state the test needs.
+  git("merge", "--quiet", "other", out: File::NULL, err: File::NULL)
+
+  def test_a_path_with_an_unresolved_merge_conflict_is_listed_once
+    assert_equal(["conflict.txt"], Alibi::Project.containing(CONFLICT_ROOT).paths)
+  end
+
   def test_runs_no_command_that_the_checkouts_own_config_names
     Alibi::Project.containing(File.join(FSMONITOR_ROOT, "lib")).paths
 
