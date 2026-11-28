@@ -1,0 +1,6 @@
+/.bundle/
+/coverage/
+/tmp/
+/vendor/
+/doc/
+/pkg/

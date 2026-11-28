@@ -1,0 +1,6 @@
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require "alibi"
+
+exit(Alibi::CommandLine.new(out: $stdout, err: $stderr).run(ARGV))
