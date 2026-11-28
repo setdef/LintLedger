@@ -1,0 +1,23 @@
+module Alibi
+  # The folder `.config/alibi` of a folder: where a bare `alibi` looks for the alibi files
+  # to check.
+  #
+  # === Examples
+  #
+  #   Alibi::AlibiFolder.new(".").names
+  #   # => [".config/alibi/rubocop-disable-never.kdl", ".config/alibi/todos-never.kdl"]
+  class AlibiFolder
+    PATH: String
+
+    @folder: String
+
+    # The folder `.config/alibi` of +folder+.
+    def initialize: (String folder) -> void
+
+    # The names of the `*.kdl` files directly in the folder, in order of name, each as
+    # `.config/alibi/NAME.kdl`, from +folder+.
+    #
+    # Raises Error when the folder has no `*.kdl` file, or doesn't exist.
+    def names: () -> Array[String]
+  end
+end

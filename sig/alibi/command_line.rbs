@@ -16,7 +16,6 @@ module Alibi
     PASSED: Integer
     FAILED: Integer
     ERRORED: Integer
-    FOLDER: String
 
     @out: IO | StringIO
     @err: IO | StringIO
@@ -47,8 +46,6 @@ module Alibi
     def run: (Array[String] arguments) -> Integer
 
     private def answer: (Array[String] lines) -> Integer?
-
-    private def conventional: () -> Array[String]
 
     private def check_each: (Array[String] names) -> Integer
 

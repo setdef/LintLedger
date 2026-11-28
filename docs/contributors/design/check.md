@@ -19,6 +19,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 | Object | Its one job | Does I/O |
 | --- | --- | --- |
 | `CommandLine` | Turns a command line into alibi files to check, checks each, and picks the exit status. | Reads alibi files; writes to the two streams |
+| `AlibiFolder` | Names the alibi files in a folder's `.config/alibi/`, for a bare `alibi`. | Lists the folder |
 | `Request` | Reads the options and the names of the alibi files from the arguments. | No |
 | `AlibiFile` | Holds a glob and a pattern, and checks a project against them, refusing a project the glob matches no file in. | No |
 | `AlibiFile::Parser`, `AlibiFile::Node` | Turn an alibi file's KDL into an `AlibiFile`, refusing anything else in it. | No |
@@ -29,6 +30,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 | `Verdict` | The files checked and the matches in them. | No |
 | `Project` | Lists a git working tree's project files, and reads one. | Runs git; reads files |
 | `Report` | Writes a verdict for a person or a log. | Writes to the stream it is given |
+| `Escaped` | Shows a text from the project, such as a path, a line, or an error message that quotes one, so it is safe to print. | No |
 
 `AlibiFile#check` takes any object with `paths` and `file(path)`, the `_Project` interface in `sig/alibi/alibi_file.rbs`, and `CommandLine` takes any object with `containing(folder)`. `Project` is the real one. The tests pass `MemoryProject` (in `test/memory_project.rb`), which holds its files in memory, so everything but `Project` and the executable is tested without a subprocess. Only `ProjectTest`, which builds one working tree for all its tests, and `ExecutableTest`, one run of `exe/alibi` for each exit status, start git or Ruby.
 
@@ -57,7 +59,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 - **`ProjectFile#matches` reads `Regexp.last_match` inside `to_enum(:scan, regexp)`,** which gives each match's position without a hand-written loop that has to step past empty matches. It takes the offset from `pre_match.length`, since RBS types `MatchData#begin` as possibly nil.
 - **Paths in the output start at the project root,** not the folder where Alibi runs. A bare `alibi`, on the other hand, looks for `.config/alibi/` in the folder where it runs, not at the project root.
 - **On Windows, git checks a symlink out as a plain file** when `core.symlinks` is false, so Alibi reads it there as a file whose text is the path of its target.
-- **A file's text reaches the terminal.** `Report` shows every control character but a tab as an escape, so a file can't move the cursor or set the terminal's title.
+- **A file's text reaches the terminal.** `Escaped` shows every control character but a tab as the escapes of its bytes, C1 characters such as U+009B included, and a byte that isn't UTF-8 the same way. `Report` and the errors `CommandLine` writes use it, so a project file, a path, or an alibi file can't move the cursor, set the terminal's title, or crash Alibi with an invalid string.
 
 ## What the check doesn't do
 

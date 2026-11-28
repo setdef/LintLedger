@@ -33,6 +33,18 @@ class ReportTest < Minitest::Test
     assert_equal("a\\x1B[2J.rb:1: TODO \\x1B]0;title\\x07\tdone\\x0D\n", @out.string.lines.last)
   end
 
+  def test_shows_control_characters_in_the_name_of_the_alibi_file_as_escapes
+    Alibi::Report.new("a\e]0;x\a.kdl", Alibi::Verdict.new(paths: [], matches: [])).write(@out)
+
+    assert_equal("a\\x1B]0;x\\x07.kdl: passed: no matches in 0 files\n", @out.string)
+  end
+
+  def test_shows_a_path_that_is_not_utf8_instead_of_crashing
+    report(Alibi::Verdict.new(paths: ["a"], matches: [match("bad\xFFname", 1, "TODO\u009B")]))
+
+    assert_equal("bad\\xFFname:1: TODO\\xC2\\x9B\n", @out.string.lines.last)
+  end
+
   private def match(path, line, text)
     Alibi::Match.new(path:, line:, text:)
   end

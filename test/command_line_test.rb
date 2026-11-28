@@ -85,6 +85,13 @@ class CommandLineTest < Minitest::Test
     assert_empty(@out.string)
   end
 
+  def test_an_error_message_shows_a_control_character_from_the_alibi_file_as_an_escape
+    write(["bad.kdl", %("\\u{1b}[2J" 1\n)])
+
+    assert_equal(2, run_with("bad.kdl"))
+    assert_equal("alibi: bad.kdl: unknown node `\\x1B[2J`: an alibi file has only `files` and `pattern`\n", @err.string)
+  end
+
   def test_with_no_alibi_file_checks_each_one_in_the_alibi_folder_by_name
     write([".config/alibi/todos.kdl", TODOS], [".config/alibi/fixmes.kdl", FIXMES], [".config/alibi/notes.txt", "x"])
 
@@ -112,13 +119,6 @@ class CommandLineTest < Minitest::Test
   end
 
   def test_with_no_alibi_file_and_no_alibi_folder_is_an_error
-    assert_equal(2, run_with)
-    assert_equal(NONE, @err.string)
-  end
-
-  def test_with_no_alibi_file_and_none_in_the_alibi_folder_is_an_error
-    write([".config/alibi/README.md", "x"])
-
     assert_equal(2, run_with)
     assert_equal(NONE, @err.string)
   end

@@ -5,8 +5,7 @@ module Alibi
     PASSED = 0
     FAILED = 1
     ERRORED = 2
-    FOLDER = ".config/alibi"
-    private_constant(:PASSED, :FAILED, :ERRORED, :FOLDER)
+    private_constant(:PASSED, :FAILED, :ERRORED)
 
     def initialize(out:, err:, folder: Dir.pwd, projects: Project)
       @out = out
@@ -17,7 +16,7 @@ module Alibi
 
     def run(arguments)
       request = Request.new(arguments)
-      answer(request.answers) || check_each(request.alibi_files { conventional })
+      answer(request.answers) || check_each(request.alibi_files { AlibiFolder.new(@folder).names })
     rescue UsageError, Error => e
       fail_with(e.message)
     end
@@ -27,13 +26,6 @@ module Alibi
 
       @out.puts(lines)
       PASSED
-    end
-
-    private def conventional
-      names = Dir.glob("*.kdl", base: File.join(@folder, FOLDER)).sort
-      raise(Error, "no alibi files in #{FOLDER}/: add one there, or name one on the command line") if names.empty?
-
-      names.map { |name| "#{FOLDER}/#{name}" }
     end
 
     private def check_each(names)
@@ -56,7 +48,7 @@ module Alibi
     end
 
     private def fail_with(message)
-      @err.puts("alibi: #{message}")
+      @err.puts("alibi: #{Escaped.new(message)}")
       ERRORED
     end
   end

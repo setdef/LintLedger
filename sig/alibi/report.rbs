@@ -6,9 +6,6 @@ module Alibi
   #   Alibi::Report.new("todos.kdl", Alibi::Verdict.new(paths: ["lib/a.rb"], matches: [])).write($stdout)
   #   # prints "todos.kdl: passed: no matches in 1 file"
   class Report
-    CONTROL: Regexp
-    ESCAPES: Hash[String, String]
-
     @name: String
     @verdict: Verdict
 
@@ -18,7 +15,8 @@ module Alibi
     # Writes the report to +out+, which takes anything with a +puts+ method. A pass is
     # one line that says how many files Alibi checked. A failure is a line with the count
     # of matches, then one line for each match, as `PATH:LINE: TEXT`. A control character
-    # from a file's path or text, other than a tab, shows as an escape such as `\x1B`.
+    # from a file's path or text, or from the alibi file's name, other than a tab, shows
+    # as an escape such as `\x1B`, as Escaped does.
     def write: (IO | StringIO out) -> void
 
     private def summary: () -> String
