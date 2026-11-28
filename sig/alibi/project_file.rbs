@@ -20,12 +20,17 @@ module Alibi
     def initialize: (String path, String content) -> void
 
     # Every match of +regexp+ in the text, in order: two on one line are two matches, and
-    # a match that spans lines is on the line where it starts. A match that starts on a
-    # line break is on the line the break ends.
+    # a match that spans lines is on the line where it starts, and knows the line where it
+    # ends. A match that starts on a line break is on the line the break ends.
     #
     # Raises Error, naming the file, when +regexp+ runs over the text for longer than
     # its timeout.
     def matches: (Regexp regexp) -> Array[Match]
+
+    # The file's lines, indexed so that Snippet#places_in can find where an alibi's
+    # snippet occurs in them. Each call builds a new index, at the cost of the text's
+    # length, so build one for each file that alibis name, and keep it.
+    def snippet_index: () -> SnippetIndex
 
     private def match_at: (MatchData match_data) -> Match
   end

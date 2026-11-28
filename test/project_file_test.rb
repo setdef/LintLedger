@@ -64,6 +64,12 @@ class ProjectFileTest < Minitest::Test
     assert_equal("the pattern ran for more than 1.0e-06 seconds over big.txt", error.message)
   end
 
+  def test_indexes_its_lines_for_snippets_as_it_matches_them_with_crlf_as_lf
+    index = Alibi::ProjectFile.new("a.txt", "a\r\n  b\r\n".b).snippet_index
+
+    assert_equal([1], index.places(%w[a b]))
+  end
+
   private def matches(file, regexp)
     file.matches(regexp).map(&:to_s)
   end

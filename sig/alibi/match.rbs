@@ -1,5 +1,6 @@
 module Alibi
-  # One match of an alibi file's pattern: where it is, and the line where it starts.
+  # One match of an alibi file's pattern: where it is, the lines where it starts and
+  # ends, and the line where it starts.
   #
   # === Examples
   #
@@ -9,10 +10,21 @@ module Alibi
     @path: String
     @line: Integer
     @text: String
+    @last_line: Integer
 
     # The match in the file at +path+, from the project root, that starts on +line+,
-    # counting from 1, whose text, without its line break, is +text+.
-    def initialize: (path: String, line: Integer, text: String) -> void
+    # counting from 1, and ends on +last_line+, the line of its last character, which is
+    # +line+ unless the match spans lines. +text+ is the line it starts on, without its
+    # line break.
+    def initialize: (path: String, line: Integer, text: String, ?last_line: Integer) -> void
+
+    # Whether the match starts on a line before +line+.
+    def starts_before?: (Integer line) -> bool
+
+    # Whether the match starts and ends within +lines+, a range of line numbers, as the
+    # matches in a snippet do. A match that ends with a line break ends on the line that
+    # the break ends.
+    def within?: (Range[Integer] lines) -> bool
 
     # The match as `PATH:LINE: TEXT`, the form editors and terminals link to the line.
     def to_s: () -> String

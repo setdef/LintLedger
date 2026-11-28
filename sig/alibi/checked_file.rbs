@@ -1,0 +1,31 @@
+module Alibi
+  # A file the glob matched, as an alibi looks for its match there: where a snippet
+  # occurs in the file, and which of the pattern's matches in it lie within some lines.
+  #
+  # === Examples
+  #
+  #   file = Alibi::ProjectFile.new("lib/a.rb", "a # TODO\nb # TODO\n")
+  #   checked = Alibi::CheckedFile.new(file.snippet_index, file.matches(/TODO/))
+  #   checked.places(Alibi::Snippet.new("b # TODO"))
+  #   # => [2..2]
+  #   checked.matches_within(2..2).map(&:to_s)
+  #   # => ["lib/a.rb:2: b # TODO"]
+  class CheckedFile
+    @index: SnippetIndex
+    @matches: Array[Match]
+
+    # The file whose lines +index+ holds, and in which the pattern found +matches+, in
+    # the order they start, as ProjectFile#matches gives them.
+    def initialize: (SnippetIndex index, Array[Match] matches) -> void
+
+    # The lines +snippet+ covers in the file, as Snippet#places_in finds them.
+    def places: (Snippet snippet) -> Array[Range[Integer]]
+
+    # The matches that start and end within +lines+, a range of line numbers, in order. A
+    # match that starts within them and ends after them is not one. Costs the log of the
+    # number of matches, plus the matches that start within +lines+.
+    def matches_within: (Range[Integer] lines) -> Array[Match]
+
+    private def first_starting_on: (Integer line) -> Integer
+  end
+end

@@ -20,9 +20,15 @@ module Alibi
       raise(Error, "the pattern ran for more than #{regexp.timeout} seconds over #{@path}")
     end
 
+    def snippet_index
+      SnippetIndex.new(@text)
+    end
+
     private def match_at(match_data)
-      offset = match_data.byteoffset(0).first #: Integer
-      Match.new(path: @path, line: @lines.number(offset), text: @lines.at(offset))
+      offset, finish = match_data.byteoffset(0) #: [Integer, Integer]
+      Match.new(
+        path: @path, line: @lines.number(offset), text: @lines.at(offset), last_line: @lines.number(finish - 1)
+      )
     end
   end
 end
