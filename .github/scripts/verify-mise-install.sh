@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
-# Installs Alibi the way README.md says, through mise's github backend, and
-# runs `alibi --version` with no Ruby reachable. Fails when the install
+# Installs Alibi the way README.md says, through mise's github backend, with
+# the recipe's `version = "latest"` replaced by VERSION, and runs
+# `alibi --version` with no Ruby reachable. Fails when the install
 # fails, when a Ruby is on the PATH the program runs with, when
 # `alibi --version` doesn't print VERSION, or when any command runs longer
 # than 120 seconds.
@@ -33,9 +34,22 @@ install_blocks() {
 }
 blocks=$(install_blocks)
 [ "$blocks" = 2 ] || { echo "verify-mise-install.sh: README.md's Install section has $blocks toml blocks, not the 2 this script numbers" >&2; exit 1; }
-install_blocks "$recipe" > mise.toml
-[ -s mise.toml ] || { echo "verify-mise-install.sh: README.md's Install section has no toml block number $recipe" >&2; exit 1; }
+readme_recipe=$(install_blocks "$recipe")
+[ -n "$readme_recipe" ] || { echo "verify-mise-install.sh: README.md's Install section has no toml block number $recipe" >&2; exit 1; }
 echo "verify-mise-install.sh: the recipe README.md gives:"
+echo "$readme_recipe"
+
+# The recipe says `latest`. By default (minimum_release_age, 24 hours) mise
+# won't pick a release published less than 24 hours ago for `latest`, but it
+# doesn't hold back an exact version. This script runs right after a release
+# is published and checks that release, so it writes VERSION in place of
+# `latest`.
+echo "$readme_recipe" | awk -v version="$version" '
+  $0 == "version = \"latest\"" { print "version = \"" version "\""; replaced++; next }
+  { print }
+  END { exit replaced != 1 }
+' > mise.toml || { echo "verify-mise-install.sh: README.md's recipe $recipe doesn't have exactly one line: version = \"latest\"" >&2; exit 1; }
+echo "verify-mise-install.sh: the mise.toml this script runs mise on:"
 cat mise.toml
 
 # Ends the command after 120 seconds. The watcher's output goes nowhere, so
