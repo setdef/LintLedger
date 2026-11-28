@@ -42,17 +42,22 @@ done
 
 # Runs the program in the project folder with an empty PATH, ends it after
 # 60 seconds, and prints what it printed. Sets $status to its exit status.
+# The watcher's output goes nowhere, so that its sleep, which outlives it,
+# holds no pipe that a caller waits on.
 run() {
   local limit=60 pid watcher
   status=0
+  rm -f "$work/timed-out"
   (cd "$work/project" && exec env PATH="$work/empty" "$program" "$@") > "$work/output.txt" 2>&1 &
   pid=$!
-  (sleep "$limit"; echo "smoke-archive.sh: alibi $* ran longer than $limit seconds" >&2; kill -9 "$pid" 2>/dev/null) &
+  (sleep "$limit"; : > "$work/timed-out"; kill -9 "$pid") > /dev/null 2>&1 &
   watcher=$!
   wait "$pid" || status=$?
-  kill "$watcher" 2>/dev/null || true
-  wait "$watcher" 2>/dev/null || true
+  kill "$watcher" > /dev/null 2>&1 || true
   cat "$work/output.txt"
+  if [ -e "$work/timed-out" ]; then
+    echo "smoke-archive.sh: alibi $* ran longer than $limit seconds" >&2
+  fi
 }
 
 expect() {
