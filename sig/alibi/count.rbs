@@ -1,0 +1,22 @@
+module Alibi
+  # A number of things, as a report writes it, with the word for one of them or for
+  # several.
+  #
+  # === Examples
+  #
+  #   Alibi::Count.new(1, "match", "matches").to_s
+  #   # => "1 match"
+  #   Alibi::Count.new(0, "file", "files").to_s
+  #   # => "0 files"
+  class Count
+    @number: Integer
+    @one: String
+    @many: String
+
+    # The count of +number+ things, each called +one+, and several called +many+.
+    def initialize: (Integer number, String one, String many) -> void
+
+    # The number and the word that goes with it, as `1 match`, `2 matches`, or `0 files`.
+    def to_s: () -> String
+  end
+end

@@ -17,13 +17,11 @@ module Alibi
       name = Escaped.new(@name)
       return "#{name}: passed: no matches #{scope}" if @verdict.passed?
 
-      matches = @verdict.count
-      "#{name}: failed: #{matches} #{(matches == 1) ? 'match' : 'matches'} #{scope}"
+      "#{name}: failed: #{Count.new(@verdict.count, 'match', 'matches')} #{scope}"
     end
 
     private def scope
-      files = @verdict.files_checked
-      "in #{files} #{(files == 1) ? 'file' : 'files'}"
+      "in #{Count.new(@verdict.files_checked, 'file', 'files')}"
     end
   end
 end
