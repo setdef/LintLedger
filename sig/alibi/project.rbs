@@ -19,6 +19,10 @@ module Alibi
   #   # => [".gitignore", "lib/alibi.rb", "lib/alibi/glob.rb"]
   #   project.file("lib/alibi.rb").text
   class Project
+    # What starts each call to git, with the settings of the checkout's own config that
+    # could make git run a command switched off, since a clone is untrusted.
+    GIT: Array[String]
+
     LIST: Array[String]
 
     @root: String

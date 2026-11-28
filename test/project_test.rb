@@ -28,6 +28,28 @@ class ProjectTest < Minitest::Test
   write(ROOT, [["lib/untracked.rb", "4\r\n"], ["build/output.rb", "5\n"]])
   File.symlink("tracked.rb", File.join(ROOT, "lib/link.rb"))
 
+  # A checkout's own config can name a command for git to run, and a clone is untrusted.
+  # This one names a command that leaves a marker.
+  FSMONITOR_ROOT = File.realpath(Dir.mktmpdir("alibi-fsmonitor-"))
+  FSMONITOR_MARKER = File.join(FSMONITOR_ROOT, "marker")
+  private_constant(:FSMONITOR_ROOT, :FSMONITOR_MARKER)
+
+  Minitest.after_run { FileUtils.remove_entry(FSMONITOR_ROOT) }
+
+  system("git", "-C", FSMONITOR_ROOT, "init", "--quiet", exception: true)
+  write(FSMONITOR_ROOT, [["lib/tracked.rb", "1\n"]])
+  system("git", "-C", FSMONITOR_ROOT, "add", ".", exception: true)
+  File.write(File.join(FSMONITOR_ROOT, ".git/config"), <<~CONFIG, mode: "a")
+    [core]
+    \tfsmonitor = echo ran >'#{FSMONITOR_MARKER}'; :
+  CONFIG
+
+  def test_runs_no_command_that_the_checkouts_own_config_names
+    Alibi::Project.containing(File.join(FSMONITOR_ROOT, "lib")).paths
+
+    refute_path_exists(FSMONITOR_MARKER)
+  end
+
   def test_finds_the_top_of_the_working_tree_from_a_folder_inside_it
     assert_includes(Alibi::Project.containing(File.join(ROOT, "lib")).paths, "docs/a café.md")
   end
