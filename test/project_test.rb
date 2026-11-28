@@ -28,7 +28,7 @@ class ProjectTest < Minitest::Test
   write(ROOT, [["lib/untracked.rb", "4\r\n"], ["build/output.rb", "5\n"]])
   File.symlink("tracked.rb", File.join(ROOT, "lib/link.rb"))
 
-  # A checkout's own config can name a command for git to run, and a clone is untrusted.
+  # A checkout's config can name a command for git to run, and a clone is untrusted.
   # This one names a command that leaves a marker.
   FSMONITOR_ROOT = File.realpath(Dir.mktmpdir("alibi-fsmonitor-"))
   FSMONITOR_MARKER = File.join(FSMONITOR_ROOT, "marker")
@@ -73,7 +73,7 @@ class ProjectTest < Minitest::Test
     assert_equal(["conflict.txt"], Alibi::Project.containing(CONFLICT_ROOT).paths)
   end
 
-  def test_runs_no_command_that_the_checkouts_own_config_names
+  def test_runs_no_command_that_the_checkouts_config_names
     Alibi::Project.containing(File.join(FSMONITOR_ROOT, "lib")).paths
 
     refute_path_exists(FSMONITOR_MARKER)
