@@ -26,6 +26,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 | `Glob` | Chooses, among a project's paths, the ones the alibi file applies to. | No |
 | `Pattern` | Compiles and vets the regexp: it refuses one that can match empty text or can't match in linear time. | No |
 | `ProjectFile` | Decodes one file's bytes and finds a regexp's matches in its text. | No |
+| `Lines` | Tells which line, and what text, a byte offset in a text is on. | No |
 | `Match` | One match, shown as `PATH:LINE: TEXT`. | No |
 | `Verdict` | The files checked and the matches in them. | No |
 | `Project` | Lists a git working tree's project files, and reads one. | Runs git; reads files |
@@ -56,7 +57,7 @@ The decisions sit in objects that do no I/O, and the I/O sits at the edges, in o
 
 - **This project's alibi files contain what they ban,** and so do the samples that test them. `bundle exec rake` runs `exe/alibi` over the alibi files in `.config/alibi/`, whose globs match only Ruby, RBS, and the files Bundler, Rake, and Steep read. The alibi files themselves are KDL, and each sample is a `.txt` file under `test/fixtures/`, so the check never reads them. `test/alibi_files_test.rb` reads the samples for each alibi file: a path its glob has to match, the forms its pattern has to find, and lines it has to leave alone. A new alibi file there needs a folder of samples too, or that test fails. Markdown is left out of the globs, since its prose names the very forms they ban.
 - **`.` doesn't match a line break** unless the pattern starts with `(?m)`, and `^` and `$` match at every line, as Ruby has them.
-- **`ProjectFile#matches` reads `Regexp.last_match` inside `to_enum(:scan, regexp)`,** which gives each match's position without a hand-written loop that has to step past empty matches. It takes the offset from `pre_match.length`, since RBS types `MatchData#begin` as possibly nil.
+- **`ProjectFile#matches` reads `Regexp.last_match` inside `to_enum(:scan, regexp)`,** which gives each match's position without a hand-written loop that has to step past empty matches. It takes the byte offset from `MatchData#byteoffset`, and `Lines` finds the line by a binary search in the byte offsets of the line starts, which it lists once. Counting line breaks from the start of the text for each match took time in proportion to the matches times the length of the file, which a file of many short lines made slow enough to look like a hang.
 - **Paths in the output start at the project root,** not the folder where Alibi runs. A bare `alibi`, on the other hand, looks for `.config/alibi/` in the folder where it runs, not at the project root.
 - **On Windows, git checks a symlink out as a plain file** when `core.symlinks` is false, so Alibi reads it there as a file whose text is the path of its target.
 - **A file's text reaches the terminal.** `Escaped` shows every control character but a tab as the escapes of its bytes, C1 characters such as U+009B included, and a byte that isn't UTF-8 the same way. `Report` and the errors `CommandLine` writes use it, so a project file, a path, or an alibi file can't move the cursor, set the terminal's title, or crash Alibi with an invalid string.

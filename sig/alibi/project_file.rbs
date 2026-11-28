@@ -11,6 +11,7 @@ module Alibi
   class ProjectFile
     @path: String
     @text: String
+    @lines: Lines
 
     # The file at +path+, from the project root, whose bytes are +content+.
     #
@@ -26,8 +27,6 @@ module Alibi
     # its timeout.
     def matches: (Regexp regexp) -> Array[Match]
 
-    private def match_at: (Integer offset) -> Match
-
-    private def line_end: (Integer offset) -> Integer
+    private def match_at: (MatchData match_data) -> Match
   end
 end

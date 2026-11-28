@@ -1,6 +1,7 @@
 # frozen_string_literal: true
 
 require "test_helper"
+require "timeout"
 
 class ProjectFileTest < Minitest::Test
   def test_finds_each_match_of_a_regexp_with_its_path_line_and_text
@@ -15,6 +16,25 @@ class ProjectFileTest < Minitest::Test
 
   def test_a_match_that_starts_on_a_line_break_is_on_the_line_the_break_ends
     assert_equal(["a.rb:1: one"], matches(Alibi::ProjectFile.new("a.rb", "one\ntwo"), /\nt/))
+  end
+
+  def test_a_match_at_the_very_end_is_on_the_line_after_the_last_line_break
+    assert_equal(["a.rb:2: "], matches(Alibi::ProjectFile.new("a.rb", "one\n"), /\z/))
+  end
+
+  def test_finds_the_line_of_a_match_after_multibyte_text
+    file = Alibi::ProjectFile.new("a.md", "café\n日本語 é\nlast é")
+
+    assert_equal(["a.md:1: café", "a.md:2: 日本語 é", "a.md:3: last é"], matches(file, /é$/))
+    assert_equal(["a.md:2: 日本語 é"], matches(file, /語/))
+  end
+
+  def test_finds_a_hundred_thousand_matches_in_linear_time
+    file = Alibi::ProjectFile.new("big.txt", "a\n" * 100_000)
+
+    found = Timeout.timeout(2) { matches(file, /a/) }
+
+    assert_equal(["big.txt:1: a", "big.txt:100000: a"], [found.first, found.last])
   end
 
   def test_reads_bytes_as_utf8

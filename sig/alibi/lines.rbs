@@ -1,0 +1,27 @@
+module Alibi
+  # The lines of a text, found by the byte offset of a place in it. A search finds the
+  # line of each of many places in log time, so a file with many matches costs no more
+  # than its length.
+  #
+  # === Examples
+  #
+  #   lines = Alibi::Lines.new("one\ntwo\n")
+  #   lines.number(5)
+  #   # => 2
+  #   lines.at(5)
+  #   # => "two"
+  class Lines
+    @text: String
+    @starts: Array[Integer]
+
+    # The lines of +text+, which ends each line with `\n`.
+    def initialize: (String text) -> void
+
+    # The number of the line that holds the byte at +offset+, counting from 1. An offset
+    # at the very end of a text that ends with a line break is on the line after it.
+    def number: (Integer offset) -> Integer
+
+    # The line that holds the byte at +offset+, without its line break.
+    def at: (Integer offset) -> String
+  end
+end
