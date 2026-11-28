@@ -1,13 +1,15 @@
 module Alibi
   # Text from a project, made safe to print: a file's text, a path, or a message that
   # quotes one must not move the cursor, clear the screen, set the title of the terminal,
-  # or crash Alibi on a byte that isn't UTF-8.
+  # reorder or break the line it is on, or crash Alibi on a byte that isn't UTF-8.
   #
   # === Examples
   #
   #   Alibi::Escaped.new("a\e[2J.rb").to_s
   #   # => "a\\x1B[2J.rb"
   class Escaped
+    # The characters shown as escapes: the C0 and C1 controls but a tab, the bidirectional
+    # overrides and isolates, and the line and paragraph separators.
     CONTROL: Regexp
 
     @text: String
@@ -15,10 +17,11 @@ module Alibi
     # The text +text+, as printed.
     def initialize: (String text) -> void
 
-    # The text with each control character, from C0 or C1, other than a tab, and each
-    # byte that isn't UTF-8, shown as the escapes of its bytes, such as `\x1B` for the
-    # escape character, and `\xC2\x9B` for the C1 character that some terminals read as
-    # the start of a control sequence.
+    # The text with each control character, from C0 or C1, other than a tab, each
+    # bidirectional override or isolate (U+202A to U+202E, U+2066 to U+2069), each line
+    # or paragraph separator (U+2028, U+2029), and each byte that isn't UTF-8, shown as the
+    # escapes of its bytes, such as `\x1B` for the escape character, and `\xC2\x9B` for the
+    # C1 character that some terminals read as the start of a control sequence.
     def to_s: () -> String
 
     private def escape: (String text) -> String

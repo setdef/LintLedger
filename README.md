@@ -83,7 +83,7 @@ Alibi runs `git` to find a project's files, so it needs `git` on the `PATH`.
 
 `alibi FILE.kdl` checks one alibi file, and `alibi A.kdl B.kdl` checks each in turn. A bare `alibi` checks every `*.kdl` file directly in `.config/alibi/` of the folder you run it in, in order of name, so a new alibi file there runs without anyone adding it to a command line. Keep one alibi file for each thing you ban, named for what it bans and to what bar, such as `rubocop-disable-never.kdl`.
 
-For each alibi file, Alibi prints one line on standard output with the alibi file's name, whether it passed, and how many files it checked. After a failure, it prints each match as `PATH:LINE: TEXT`, with the path from the project root and the whole line where the match starts. Alibi prints no color. A control character from a file, other than a tab, shows as an escape such as `\x1B`.
+For each alibi file, Alibi prints one line on standard output with the alibi file's name, whether it passed, and how many files it checked. After a failure, it prints each match as `PATH:LINE: TEXT`, with the path from the project root and the whole line where the match starts. Alibi prints no color. It shows a control character from a file, other than a tab, as an escape such as `\x1B`, and does the same for each character that changes the order of the text around it or breaks the line: a bidirectional override or isolate, and the line and paragraph separators.
 
 Errors go to standard error, one line each, starting with `alibi:` and the alibi file's name. After an error in one alibi file, Alibi still checks the rest.
 

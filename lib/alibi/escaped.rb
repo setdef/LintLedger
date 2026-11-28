@@ -2,7 +2,7 @@
 
 module Alibi
   class Escaped
-    CONTROL = /[\x00-\x08\x0A-\x1F\x7F\u0080-\u009F]/
+    CONTROL = /[\x00-\x08\x0A-\x1F\x7F\u0080-\u009F\u2028\u2029\u202A-\u202E\u2066-\u2069]/
     private_constant(:CONTROL)
 
     def initialize(text)
